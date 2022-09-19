@@ -1,0 +1,10 @@
+<network>
+  <name>br-mgmt</name>
+  <forward mode='nat'/>
+  <bridge name='br-mgmt' stp='on' delay='0'/>
+  <ip address='${mgmt_bridge_ip}' prefix='${mgmt_prefix}'>
+    <dhcp>
+      <range start='${mgmt_dhcp}' end='${mgmt_dhcp}'/>
+    </dhcp>
+  </ip>
+</network>

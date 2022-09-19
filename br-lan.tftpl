@@ -1,0 +1,6 @@
+<network>
+  <name>br-lan</name>
+  <forward mode='open'/>
+  <bridge name='br-lan' stp='on' delay='0'/>
+  <ip address='${lan_bridge_ip}' prefix='${lan_prefix}'/>
+</network>

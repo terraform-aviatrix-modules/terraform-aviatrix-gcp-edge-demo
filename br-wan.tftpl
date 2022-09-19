@@ -1,0 +1,6 @@
+<network>
+  <name>br-wan</name>
+  <forward mode='nat'/>
+  <bridge name='br-wan' stp='on' delay='0'/>
+  <ip address='${wan_bridge_ip}' prefix='${wan_prefix}'/>
+</network>

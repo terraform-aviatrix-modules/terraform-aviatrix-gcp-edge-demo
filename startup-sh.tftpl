@@ -1,0 +1,129 @@
+#!/bin/bash
+# Configure host VM for edge instance(s)
+
+# Make /edge dir
+if [ ! -d /edge ]; then
+  mkdir /edge
+fi
+
+# Install updates. Probably just one reboot to get on latest of the time.
+# After that, just a demo.
+if [ ! -f /etc/updates-done ]; then
+  export DEBIAN_FRONTEND=noninteractive
+  apt -y update
+  if [ ! -z "$(apt-get -s upgrade | grep -E '^Inst')" ]; then
+    apt -y upgrade  
+    if [ -e /var/run/needrestart ]; then
+      reboot
+    fi
+  else
+    touch /etc/updates-done
+  fi
+fi
+
+# Install bridge-utils; needed for VXLAN bridge
+if [ -z "$(command -v bridge)" ]; then
+  apt -y install bridge-utils
+fi
+
+# Enable IP Forwarding
+# Pick the last file, ideally 99-sysctl.conf on Ubuntu.
+if [ -z $(grep -E "^net.ipv4.ip_forward=1$" /etc/sysctl.d/*) ]; then
+  sed -i "s/^#\?net.ipv4.ip_forward=[0,1]$/net.ipv4.ip_forward=1/g" $(grep -lE "^#?net.ipv4.ip_forward" /etc/sysctl.d/* | tail -n 1)
+  sysctl --system
+fi
+
+# Download all config files from storage bucket.
+gsutil -m cp gs://${bucket}/${host_vm}/* /edge/.
+
+# Add vxlan files to directory.
+# Since the script is kicked off after the br-lan network is started, it needs to be there first.
+sed -i -e 's/\r$//' /edge/libvirt-hook-network.sh #fix CRLF from Windows
+cmp -s /edge/libvirt-hook-network.sh /etc/libvirt/hooks/network
+if [ $? == 1 ]; then
+  mkdir -p /etc/libvirt/hooks/network
+  cp /edge/libvirt-hook-network.sh /etc/libvirt/hooks/network
+  chmod o+rx /etc/libvirt/hooks/network
+  systemctl restart libvirtd
+fi
+
+# If the qcow2 file is missing, we'll download it.
+# This is typically on the first run only as existing installs are updated in place.
+if [ ! -f /edge/edge.qcow2 ]; then
+  gsutil cp gs://${bucket}/edge.qcow2 /edge/.
+fi
+
+# Install libvirtd/kvm
+if [ "$(systemctl is-active libvirtd)" != "active" ]; then
+  apt -y install qemu-kvm libvirt-daemon-system virtinst libvirt-clients
+fi
+
+# Enable Guest shutdown for Libvirt
+if [ -z $(grep -E "^ON_SHUTDOWN=shutdown" /etc/default/libvirt-guests) ]; then
+  sed -i "s/^#\?ON_SHUTDOWN.*$/ON_SHUTDOWN=shutdown/g" /etc/default/libvirt-guests
+fi
+
+# Install frr
+if [ "$(systemctl is-active frr)" != "active" ]; then
+  apt -y install frr
+fi
+
+# Configure FRR
+# FRR has a default frr.conf so this will work regardless.
+cmp -s /edge/frr.conf /etc/frr/frr.conf
+if [ $? == 1 ]; then
+  systemctl stop frr
+  sed -i 's/bgpd=no/bgpd=yes/g' /etc/frr/daemons
+  cp /edge/frr.conf /etc/frr/frr.conf
+  systemctl start frr
+fi
+
+# Copy edge.qcow2 and ztp.iso to the destination.
+if [ ! -f /var/lib/libvirt/images/${edge_vm}.qcow2 ]; then
+  cp /edge/edge.qcow2 /var/lib/libvirt/images/${edge_vm}.qcow2
+  cp /edge/${ztp_basename} /var/lib/libvirt/images/.
+fi
+
+# Remove default network
+if [ ! -z "$(virsh net-list --all --name | grep default)" ]; then
+  virsh net-undefine default
+  virsh net-destroy default
+fi
+
+# Register and start libvirt networks
+if [ -z "$(virsh net-list --name --all | grep br-wan)" ]; then
+  virsh net-define /edge/br-wan.xml
+fi
+
+if [ -z "$(virsh net-list --name | grep br-wan)" ]; then
+  virsh net-start br-wan
+  virsh net-autostart br-wan
+fi
+
+if [ -z "$(virsh net-list --name --all | grep br-lan)" ]; then
+  virsh net-define /edge/br-lan.xml
+fi
+
+if [ -z "$(virsh net-list --name | grep br-lan)" ]; then
+  virsh net-start br-lan
+  virsh net-autostart br-lan
+fi
+
+if [ -z "$(virsh net-list --name --all | grep br-mgmt)" ]; then
+  virsh net-define /edge/br-mgmt.xml
+fi
+
+if [ -z "$(virsh net-list --name | grep br-mgmt)" ]; then
+  virsh net-start br-mgmt
+  virsh net-autostart br-mgmt
+fi
+
+# Register Edge VM and start it
+if [ -z "$(virsh list --name --all | grep ${edge_vm})" ]; then
+  virsh define /edge/vm.xml
+fi
+
+if [ -z "$(virsh list  --name | grep ${edge_vm})" ]; then
+  virsh start ${edge_vm}
+  virsh autostart ${edge_vm}
+fi

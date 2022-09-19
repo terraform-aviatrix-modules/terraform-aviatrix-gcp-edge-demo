@@ -1,0 +1,13 @@
+#!/bin/bash
+#Create vxlan interfaces for the bridge after libvirt brings up br-lan
+if [ $1 = "br-lan" ]; then
+  if [ $2 = "started" ]; then
+    ip link add vxlan100 type vxlan id 100 dstport 4789 local ${my_vpc_ip}
+    ip link set vxlan100 master br-lan up
+%{ for peer_vpc_ip in peer_vpc_ips ~}
+    bridge fdb append 00:00:00:00:00:00 dev vxlan100 dst ${peer_vpc_ip}
+%{ endfor ~}
+  elif [ $2 = "stopped" ]; then
+    ip link delete vxlan100
+  fi
+fi

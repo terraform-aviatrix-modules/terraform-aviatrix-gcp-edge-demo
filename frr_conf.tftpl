@@ -1,0 +1,23 @@
+frr version 8.1
+frr defaults datacenter
+hostname ${host_vm}
+log syslog informational
+no ipv6 forwarding
+service integrated-vtysh-config
+!
+%{ for cidr in external_cidrs ~}
+ip route ${cidr} ${vpc_gw}
+%{ endfor ~}
+!
+router bgp ${host_vm_asn}
+ bgp router-id ${my_ip}
+ neighbor ${edge_ip} remote-as ${edge_vm_asn}
+%{ for peer_ip in peer_ips ~}
+ neighbor ${peer_ip} remote-as ${host_vm_asn}
+%{ endfor ~}
+ !
+ address-family ipv4 unicast
+  redistribute static
+ exit-address-family
+exit
+!

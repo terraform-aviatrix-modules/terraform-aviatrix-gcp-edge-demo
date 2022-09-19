@@ -1,0 +1,14 @@
+setenv.ps1
+terraform.*
+.terraform*
+netshoot-deploy.bat
+*.pem
+*.pub
+*.xml
+*.sh
+*.netdev
+*.network
+*-frr.conf
+config/*
+*.qcow2
+*.iso
