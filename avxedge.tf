@@ -8,11 +8,11 @@ resource "aviatrix_edge_spoke" "edge" {
 
   management_interface_config = "DHCP"
 
-  wan_interface_ip_prefix = each.value.wan_edge_prefix
+  wan_interface_ip_prefix = "${each.value.wan_edge_ip}/${each.value.wan_prefix_size}"
   wan_default_gateway_ip  = each.value.wan_bridge_ip
   wan_public_ip           = google_compute_address.host_vm_pip[each.key].address
 
-  lan_interface_ip_prefix = each.value.lan_edge_prefix
+  lan_interface_ip_prefix = "${each.value.lan_edge_ip}/${each.value.lan_prefix_size}"
 
   ztp_file_type          = "iso"
   ztp_file_download_path = "${path.module}/${each.key}/"
@@ -30,4 +30,8 @@ resource "aviatrix_edge_spoke_external_device_conn" "to_host_vm" {
   bgp_remote_as_num = var.host_vm_asn
   local_lan_ip      = each.value.lan_edge_ip
   remote_lan_ip     = each.value.lan_bridge_ip
+
+  depends_on = [
+    google_compute_instance.host_vm
+  ]
 }

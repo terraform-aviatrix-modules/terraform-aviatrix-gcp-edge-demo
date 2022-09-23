@@ -8,7 +8,9 @@ netshoot-deploy.bat
 *.sh
 *.netdev
 *.network
-*-frr.conf
+*.conf
 config/*
 *.qcow2
 *.iso
+*bak
+avx-host-vm*

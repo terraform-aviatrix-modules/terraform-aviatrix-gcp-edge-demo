@@ -1,0 +1,11 @@
+#cloud-config
+#basic just to add packages, install updates, reboot.
+packages:
+  - frr
+  - plocate
+  - bridge-utils
+  - qemu-kvm
+  - libvirt-daemon-system
+  - libvirt-clients
+package_upgrade: true
+package_reboot_if_required: true

@@ -30,12 +30,12 @@
     <emulator>/usr/bin/qemu-system-x86_64</emulator>
     <disk type="file" device="disk">
       <driver name="qemu" type="qcow2"/>
-      <source file="/var/lib/libvirt/images/${edge_vm}.qcow2"/>
+      <source file="/var/lib/libvirt/images/edge.qcow2"/>
       <target dev="vda" bus="virtio"/>
     </disk>
     <disk type="file" device="cdrom">
       <driver name="qemu" type="raw"/>
-      <source file="/var/lib/libvirt/images/${ztp_basename}"/>
+      <source file="/var/lib/libvirt/images/ztp.iso"/>
       <target dev="sda" bus="sata"/>
       <readonly/>
     </disk>
