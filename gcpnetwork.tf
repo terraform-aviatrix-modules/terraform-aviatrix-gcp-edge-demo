@@ -60,15 +60,15 @@ resource "google_compute_region_health_check" "health_check" {
 }
 
 resource "google_compute_region_backend_service" "backend_service" {
-  name = local.backend_service_name
-  health_checks = [ google_compute_region_health_check.health_check.id ]
-  protocol = "TCP"
+  name                  = local.backend_service_name
+  health_checks         = [google_compute_region_health_check.health_check.id]
+  protocol              = "TCP"
   load_balancing_scheme = "INTERNAL"
 
   dynamic "backend" {
     for_each = google_compute_instance_group.instance_group
     content {
-      group =  backend.value.id
+      group = backend.value.id
     }
   }
 }
@@ -77,7 +77,7 @@ resource "google_compute_forwarding_rule" "forwarding_rule" {
   name                  = local.forwarding_rule_name
   backend_service       = google_compute_region_backend_service.backend_service.id
   ip_protocol           = "TCP"
-  ip_address = local.ilb_vpc_ip
+  ip_address            = local.ilb_vpc_ip
   load_balancing_scheme = "INTERNAL"
   all_ports             = true
   allow_global_access   = true

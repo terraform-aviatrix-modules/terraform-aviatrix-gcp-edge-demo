@@ -85,14 +85,14 @@ locals {
 
   host_vpc_name    = "${var.pov_prefix}-vpc"
   host_subnet_name = "${var.pov_prefix}-subnet"
-  host_ssh         = concat(["35.235.240.0/20"], var.admin_cidr)    #GCP IAP prefix for portal ssh
+  host_ssh         = concat(["35.235.240.0/20"], var.admin_cidr)                                       #GCP IAP prefix for portal ssh
   host_allow_all   = concat([var.host_vm_cidr, "130.211.0.0/22", "35.191.0.0/16"], var.external_cidrs) #We allow all from the external cidrs and the host_vm_cidr itself.
   host_vm_prefix   = "${var.pov_prefix}-host"
   edge_vm_prefix   = "${var.pov_prefix}-edge"
 
-  storage_name = "${var.pov_prefix}-edge-bucket"
+  storage_name         = "${var.pov_prefix}-edge-bucket"
   backend_service_name = "${var.pov_prefix}-backend-service"
-  hc_name = "${var.pov_prefix}-edge-bgp-hc"
+  hc_name              = "${var.pov_prefix}-edge-bgp-hc"
   forwarding_rule_name = "${var.pov_prefix}-edge-forwarding-rule"
 
   #Need to carve var.edge_lan_cidr and local.internal_cidr into /29 prefixes.
@@ -125,11 +125,11 @@ locals {
 
     wan_prefix_size = local.wan_prefix_size
     wan_bridge_ip   = cidrhost(cidrsubnet(local.wan_cidr, local.wan_cidr_bits_to_subtract, i), 1)
-    wan_edge_ip   = cidrhost(cidrsubnet(local.wan_cidr, local.wan_cidr_bits_to_subtract, i), 2)
+    wan_edge_ip     = cidrhost(cidrsubnet(local.wan_cidr, local.wan_cidr_bits_to_subtract, i), 2)
 
     lan_prefix_size = local.lan_prefix_size,
-    lan_bridge_ip   = cidrhost(var.edge_lan_cidr,(i*2)+1) #If this errors, the edge_lan_cidr prefix is too low.
-    lan_edge_ip     = cidrhost(var.edge_lan_cidr,(i*2)+2) #If this errors, the edge_lan_cidr prefix is too low.
+    lan_bridge_ip   = cidrhost(var.edge_lan_cidr, (i * 2) + 1) #If this errors, the edge_lan_cidr prefix is too low.
+    lan_edge_ip     = cidrhost(var.edge_lan_cidr, (i * 2) + 2) #If this errors, the edge_lan_cidr prefix is too low.
 
     mgmt_prefix_size = local.mgmt_prefix_size
     mgmt_bridge_ip   = cidrhost(cidrsubnet(local.mgmt_cidr, local.mgmt_cidr_bits_to_subtract, i), 1)

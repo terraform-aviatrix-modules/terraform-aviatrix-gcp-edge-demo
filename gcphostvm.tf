@@ -78,5 +78,5 @@ resource "google_compute_instance_group" "instance_group" {
   zone    = data.google_compute_zones.available.names[count.index]
   network = google_compute_network.vpc_network.id
 
-  instances = [ for vm in google_compute_instance.host_vm : vm.id if vm.zone == data.google_compute_zones.available.names[count.index] ]
+  instances = [for vm in google_compute_instance.host_vm : vm.id if vm.zone == data.google_compute_zones.available.names[count.index]]
 }
