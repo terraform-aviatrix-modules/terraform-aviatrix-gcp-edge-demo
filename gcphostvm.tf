@@ -55,7 +55,6 @@ resource "google_compute_instance" "host_vm" {
   metadata = {
     startup-script-url = "gs://${google_storage_bucket.bucket.name}/${each.key}/startup.sh"
     user-data          = file("${path.module}/cloud-init.yaml")
-    nested-vm-status   = "na"
   }
 
   lifecycle {

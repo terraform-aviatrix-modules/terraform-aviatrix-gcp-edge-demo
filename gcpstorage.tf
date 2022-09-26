@@ -14,7 +14,7 @@ resource "google_storage_bucket" "bucket" {
 resource "google_storage_bucket_object" "libvirt_br_wan_xml" {
   for_each = local_file.libvirt_br_wan_xml
 
-  name   = trimprefix(each.value.filename, "./")
+  name   = "${each.key}/${basename(each.value.filename)}"
   source = each.value.filename
   bucket = google_storage_bucket.bucket.name
 
@@ -28,7 +28,7 @@ resource "google_storage_bucket_object" "libvirt_br_wan_xml" {
 resource "google_storage_bucket_object" "libvirt_br_lan_xml" {
   for_each = local_file.libvirt_br_lan_xml
 
-  name   = trimprefix(each.value.filename, "./")
+  name   = "${each.key}/${basename(each.value.filename)}"
   source = each.value.filename
   bucket = google_storage_bucket.bucket.name
 
@@ -42,7 +42,7 @@ resource "google_storage_bucket_object" "libvirt_br_lan_xml" {
 resource "google_storage_bucket_object" "libvirt_br_mgmt_xml" {
   for_each = local_file.libvirt_br_mgmt_xml
 
-  name   = trimprefix(each.value.filename, "./")
+  name   = "${each.key}/${basename(each.value.filename)}"
   source = each.value.filename
   bucket = google_storage_bucket.bucket.name
 
@@ -56,7 +56,7 @@ resource "google_storage_bucket_object" "libvirt_br_mgmt_xml" {
 resource "google_storage_bucket_object" "libvirt_vm_xml" {
   for_each = local_file.libvirt_vm_xml
 
-  name   = trimprefix(each.value.filename, "./")
+  name   = "${each.key}/${basename(each.value.filename)}"
   source = each.value.filename
   bucket = google_storage_bucket.bucket.name
 
@@ -70,7 +70,7 @@ resource "google_storage_bucket_object" "libvirt_vm_xml" {
 resource "google_storage_bucket_object" "libvirt_hook_network" {
   for_each = local_file.libvirt_hook_network
 
-  name   = trimprefix(each.value.filename, "./")
+  name   = "${each.key}/${basename(each.value.filename)}"
   source = each.value.filename
   bucket = google_storage_bucket.bucket.name
 
@@ -84,7 +84,7 @@ resource "google_storage_bucket_object" "libvirt_hook_network" {
 resource "google_storage_bucket_object" "startup_script" {
   for_each = local_file.startup_script
 
-  name   = trimprefix(each.value.filename, "./")
+  name   = "${each.key}/${basename(each.value.filename)}"
   source = each.value.filename
   bucket = google_storage_bucket.bucket.name
 
@@ -98,7 +98,7 @@ resource "google_storage_bucket_object" "startup_script" {
 resource "google_storage_bucket_object" "frr_conf" {
   for_each = local_file.frr_conf
 
-  name   = trimprefix(each.value.filename, "./")
+  name   = "${each.key}/${basename(each.value.filename)}"
   source = each.value.filename
   bucket = google_storage_bucket.bucket.name
 

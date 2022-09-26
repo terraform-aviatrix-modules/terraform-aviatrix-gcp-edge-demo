@@ -108,11 +108,13 @@ locals {
   mgmt_prefix_size           = 30 #The bridge only needs the host VM and edge VM. So 2.
   mgmt_cidr_bits_to_subtract = (local.mgmt_prefix_size - element(split("/", local.mgmt_cidr), 1))
 
+  host_vm_cidr_bits = (32 - element(split("/", var.host_vm_cidr), 1))
   #List of CIDRs to route out to the VPC.
   external_cidrs = concat([var.host_vm_cidr], var.external_cidrs)
 
-  #Load Balancer VPC IP
+  #Load Balancer & test vm VPC IP
   ilb_vpc_ip = cidrhost(var.host_vm_cidr, 2) #Get first usable IP
+  test_vm_ip = cidrhost(var.host_vm_cidr, pow(2, host_vm_cidr_bits) - 2) #Get last IP
 
   host_vms = { for i in range(var.host_vm_count) : "${var.pov_prefix}-host-vm-${i + 1}" => {
     index = i
