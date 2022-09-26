@@ -114,7 +114,7 @@ locals {
 
   #Load Balancer & test vm VPC IP
   ilb_vpc_ip = cidrhost(var.host_vm_cidr, 2) #Get first usable IP
-  test_vm_ip = cidrhost(var.host_vm_cidr, pow(2, host_vm_cidr_bits) - 2) #Get last IP
+  test_vm_ip = cidrhost(var.host_vm_cidr, pow(2, local.host_vm_cidr_bits) - 2) #Get last IP
 
   host_vms = { for i in range(var.host_vm_count) : "${var.pov_prefix}-host-vm-${i + 1}" => {
     index = i
