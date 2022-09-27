@@ -138,8 +138,8 @@ for netname in "default" "br-wan" "br-lan" "br-mgmt"; do
   #default
   if [ $netname == "default"]; then
     if [ $${net[0]} == "default"; ] then
-      if [ $${net[1]} == "active"]; do virsh net-destory default; fi
-      if [ $${net[3]} == "yes"]; do virsh net-undefine default; fi
+      if [ $${net[1]} == "active"]; then virsh net-destory default; fi
+      if [ $${net[3]} == "yes"]; then virsh net-undefine default; fi
     fi
     continue
   #network not defined
@@ -163,7 +163,7 @@ for netname in "default" "br-wan" "br-lan" "br-mgmt"; do
   #network defined. Is it running? 
   if [ $${net[1]} != "active"]; do
     virsh net-start $net
-    if [ $${net[2]} != "yes"; do virsh net-autostart $net; fi
+    if [ $${net[2]} != "yes"; then virsh net-autostart $net; fi
     continue
   fi
 done
