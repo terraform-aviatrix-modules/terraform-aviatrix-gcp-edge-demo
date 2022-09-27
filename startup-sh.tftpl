@@ -171,7 +171,7 @@ done
 
 # Register Edge VM and start it
 vmstatus=$(virsh list --all | sed -rn "s/.*$edge_vm ([[:lower:]]*)/\1/p")
-if [ -z $vmstatus ]; then
+if [ -z "$vmstatus" ]; then
   while :; do
     gsutil cp gs://${bucket}/${host_vm}/vm.xml /edge/.
     if [ $? -ne 0 ]; then
@@ -188,7 +188,7 @@ if [ -z $vmstatus ]; then
   virsh autostart ${edge_vm}
 fi
 
-if [ $vmstatus != "running" ]; then
+if [ "$vmstatus" != "running" ]; then
   virsh start ${edge_vm}
   virsh autostart ${edge_vm}
 fi
