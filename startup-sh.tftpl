@@ -69,7 +69,7 @@ fi
 #Wait for cloud-init
 #It might be done while we copied the files.
 cloud-init status --wait > /dev/null 2>&1
-if [ $? == 1 ]; then
+if [ $? -eq 1 ]; then
   echo "cloud-init status returned 1."
 fi
 
@@ -136,10 +136,10 @@ netlist=$(virsh net-list --all)
 for netname in "default" "br-wan" "br-lan" "br-mgmt"; do
   net=($(echo $netlist | sed -rn "s/.*($netname) ([[:lower:]]*) (yes|no) (yes|no).*/\1\n\2\n\3\n\4/p"))
   #default
-  if [ $netname == "default"]; then
-    if [ $${net[0]} == "default" ]; then
-      if [ $${net[1]} == "active"]; then virsh net-destory default; fi
-      if [ $${net[3]} == "yes"]; then virsh net-undefine default; fi
+  if [ $netname = "default" ]; then
+    if [ $${net[0]} = "default" ]; then
+      if [ $${net[1]} = "active" ]; then virsh net-destory default; fi
+      if [ $${net[3]} = "yes" ]; then virsh net-undefine default; fi
     fi
     continue
   fi
@@ -157,14 +157,14 @@ for netname in "default" "br-wan" "br-lan" "br-mgmt"; do
       fi
     done
     virsh net-define /edge/$netname.xml
-    virsh net-start $net
-    virsh net-autostart $net
+    virsh net-start $netname
+    virsh net-autostart $netname
     continue
   fi
   #network defined. Is it running? 
   if [ $${net[1]} != "active"]; then
-    virsh net-start $net
-    if [ $${net[2]} != "yes"; then virsh net-autostart $net; fi
+    virsh net-start $netname
+    if [ $${net[2]} != "yes"; then virsh net-autostart $netname; fi
     continue
   fi
 done
