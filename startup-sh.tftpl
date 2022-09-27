@@ -33,7 +33,9 @@ if [ ! -f /var/lib/libvirt/images/edge.qcow2 ]; then
       break
     fi
   done
+fi
 
+if [ ! -f /var/lib/libvirt/images/ztp.iso ]; then
   #ZTP iso
   while :; do
     gsutil cp gs://${bucket}/${host_vm}/ztp.iso /var/lib/libvirt/images/.
