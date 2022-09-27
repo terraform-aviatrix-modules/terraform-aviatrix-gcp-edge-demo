@@ -137,7 +137,7 @@ for netname in "default" "br-wan" "br-lan" "br-mgmt"; do
   net=($(echo $netlist | sed -rn "s/.*($netname) ([[:lower:]]*) (yes|no) (yes|no).*/\1\n\2\n\3\n\4/p"))
   #default
   if [ $netname = "default" ]; then
-    if [ $${net[0]} = "default" ]; then
+    if ["$${net[0]}" = "default" ]; then
       if [ $${net[1]} = "active" ]; then virsh net-destory default; fi
       if [ $${net[3]} = "yes" ]; then virsh net-undefine default; fi
     fi
@@ -162,9 +162,9 @@ for netname in "default" "br-wan" "br-lan" "br-mgmt"; do
     continue
   fi
   #network defined. Is it running? 
-  if [ $${net[1]} != "active"]; then
+  if [ $${net[1]} != "active" ]; then
     virsh net-start $netname
-    if [ $${net[2]} != "yes"; then virsh net-autostart $netname; fi
+    if [ $${net[2]} != "yes" ]; then virsh net-autostart $netname; fi
     continue
   fi
 done
