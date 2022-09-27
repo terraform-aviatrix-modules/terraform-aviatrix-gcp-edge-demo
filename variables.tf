@@ -141,7 +141,7 @@ locals {
     index = i
 
     host_vm = "${var.pov_prefix}-host-vm-${i + 1}"
-    host_asn = var.host_asn
+    host_asn = var.host_vm_asn
     #host_vm_asn = var.host_vm_asn
     vpc_ip = cidrhost(var.host_vm_cidr, i + 3) #Right after the ILB
 
