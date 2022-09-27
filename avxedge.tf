@@ -20,6 +20,7 @@ resource "aviatrix_edge_spoke" "edge" {
   local_as_number = var.edge_vm_asn
 }
 
+# Connect Edge VMs to host VMs with BGPoLAN
 resource "aviatrix_edge_spoke_external_device_conn" "to_host_vm" {
   for_each = local.host_vms
 
@@ -32,6 +33,20 @@ resource "aviatrix_edge_spoke_external_device_conn" "to_host_vm" {
   remote_lan_ip     = each.value.lan_bridge_ip
 
   depends_on = [
-    google_compute_instance.host_vm
+    google_compute_instance.host_vm,
+    null_resource.edge_check
+  ]
+}
+
+#Connect Edge VMs to Transit
+resource "aviatrix_edge_spoke_transit_attachment" "to_transit_gw" {
+  for_each = local.edge_to_transit_gateways
+
+  spoke_gw_name   = element(split(each.key, "~"), 0)
+  transit_gw_name = element(split(each.key, "~"), 1)
+
+  depends_on = [
+    google_compute_instance.host_vm,
+    null_resource.edge_check
   ]
 }

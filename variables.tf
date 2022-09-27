@@ -1,33 +1,33 @@
 # Variables for Host VM and Edge deployment
 variable "admin_cidr" {
-  description = "CIDR that can SSH to the Host VMs. For GCP, the IAP range is always allowed."
+  description = "CIDRs that can SSH to the Host VMs. For GCP, the IAP range is always allowed."
   default     = []
 }
 
 variable "region" {
-  description = "Define the region for the VMs."
+  description = "Define the region for the VM and Storage Account."
   default     = "us-central1"
 }
 
-variable "project_id" {
-  description = "GCP project to deploy into."
-  default     = null
+# variable "project_id" {
+#   description = "GCP project to deploy into."
+#   default     = null
 
-  #   validation {
-  #     condition     = (var.project_id != null && var.subscription_id != null) != null || (var.project_id == null && var.subscription_id == null)
-  #     error_message = "You must define the GCP Project ID (project_id) OR Azure Subscription ID (subscription_id)."
-  #   }
-}
+#   #   validation {
+#   #     condition     = (var.project_id != null && var.subscription_id != null) != null || (var.project_id == null && var.subscription_id == null)
+#   #     error_message = "You must define the GCP Project ID (project_id) OR Azure Subscription ID (subscription_id)."
+#   #   }
+# }
 
-variable "subscription_id" {
-  description = "Azure Subscription to deploy into."
-  default     = null
+# variable "subscription_id" {
+#   description = "Azure Subscription to deploy into."
+#   default     = null
 
-  # validation {
-  #   condition     = (var.project_id != null && var.subscription_id != null) || (var.project_id == null && var.subscription_id == null)
-  #   error_message = "You must define the GCP Project ID (project_id) OR Azure Subscription ID (subscription_id)."
-  # }
-}
+#   # validation {
+#   #   condition     = (var.project_id != null && var.subscription_id != null) || (var.project_id == null && var.subscription_id == null)
+#   #   error_message = "You must define the GCP Project ID (project_id) OR Azure Subscription ID (subscription_id)."
+#   # }
+# }
 
 variable "pov_prefix" {
   description = "Name prefix to prepend to all created resources. ie avx-edge-vm-1."
@@ -59,6 +59,16 @@ variable "host_vm_count" {
   default     = 2
 }
 
+variable "test_vm_size" {
+  description = "Test VM. Itty bitty is fine."
+  default     = "e2-micro"
+}
+
+variable "vm_ssh_key" {
+  description = "Host/Test VM Public Key in string form. Must include user@domain at the end of the key."
+  default     = ""
+}
+
 variable "edge_vm_asn" {
   description = "ASN for Edge instances"
   default     = 64581
@@ -79,16 +89,27 @@ variable "external_cidrs" {
   default     = []
 }
 
+variable "transit_gateways" {
+  description = "List of Transit Gateways to connect the Edge Gateways to."
+  default     = []
+}
+
 # Locals/computed
 locals {
   pov_edge_site = "${var.pov_prefix}-edge-site"
 
   host_vpc_name    = "${var.pov_prefix}-vpc"
   host_subnet_name = "${var.pov_prefix}-subnet"
-  host_ssh         = concat(["35.235.240.0/20"], var.admin_cidr)                                       #GCP IAP prefix for portal ssh
-  host_allow_all   = concat([var.host_vm_cidr, "130.211.0.0/22", "35.191.0.0/16"], var.external_cidrs) #We allow all from the external cidrs and the host_vm_cidr itself.
-  host_vm_prefix   = "${var.pov_prefix}-host"
-  edge_vm_prefix   = "${var.pov_prefix}-edge"
+  host_ssh         = concat(["35.235.240.0/20"], var.admin_cidr) #GCP IAP prefix for portal ssh
+  #host_ssh         = concat(["35.235.240.0/20", data.http.my_public_ip.response_body ], var.admin_cidr)  #GCP IAP prefix for portal ssh
+  host_allow_all = concat([var.host_vm_cidr, "130.211.0.0/22", "35.191.0.0/16"], var.external_cidrs) #We allow all from the external cidrs and the host_vm_cidr itself.
+  host_vm_prefix = "${var.pov_prefix}-host"
+
+  test_vm_name = "${var.pov_prefix}-test-vm"
+
+  vm_ssh_key = var.vm_ssh_key == "" ? "" : "${regex("([[:alnum:]]*)@", var.vm_ssh_key)[0]}:${var.vm_ssh_key}"
+
+  edge_vm_prefix = "${var.pov_prefix}-edge"
 
   storage_name         = "${var.pov_prefix}-edge-bucket"
   backend_service_name = "${var.pov_prefix}-backend-service"
@@ -113,8 +134,8 @@ locals {
   external_cidrs = concat([var.host_vm_cidr], var.external_cidrs)
 
   #Load Balancer & test vm VPC IP
-  ilb_vpc_ip = cidrhost(var.host_vm_cidr, 2) #Get first usable IP
-  test_vm_ip = cidrhost(var.host_vm_cidr, pow(2, local.host_vm_cidr_bits) - 2) #Get last IP
+  ilb_vpc_ip     = cidrhost(var.host_vm_cidr, 2)                                   #Get first usable IP
+  test_vm_vpc_ip = cidrhost(var.host_vm_cidr, pow(2, local.host_vm_cidr_bits) - 3) #Get 2nd to last usable IP
 
   host_vms = { for i in range(var.host_vm_count) : "${var.pov_prefix}-host-vm-${i + 1}" => {
     index = i
@@ -154,4 +175,6 @@ locals {
     edge_ip        = my_obj.lan_edge_ip
     peer_ips       = [for peer_name, peer_obj in local.host_vms : peer_obj.lan_bridge_ip if my_obj.lan_bridge_ip != peer_obj.lan_bridge_ip]
   } }
+
+  edge_to_transit_gateways = toset(flatten([for edge in aviatrix_edge_spoke.edge : [for transit in var.transit_gateways : "${edge}~${transit}"]]))
 }

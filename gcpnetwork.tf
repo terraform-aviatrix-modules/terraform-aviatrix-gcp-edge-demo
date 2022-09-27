@@ -84,3 +84,27 @@ resource "google_compute_forwarding_rule" "forwarding_rule" {
   network               = google_compute_network.vpc_network.id
   subnetwork            = google_compute_subnetwork.vpc_subnet.id
 }
+
+resource "google_compute_route" "avx-edge-rfc10" {
+  name         = "avx-edge-rfc10"
+  dest_range   = "10.0.0.0/8"
+  network      = google_compute_network.vpc_network.name
+  next_hop_ilb = google_compute_forwarding_rule.forwarding_rule.id
+  priority     = 500
+}
+
+resource "google_compute_route" "avx-edge-rfc172" {
+  name         = "avx-edge-rfc172"
+  dest_range   = "172.16.0.0/12"
+  network      = google_compute_network.vpc_network.name
+  next_hop_ilb = google_compute_forwarding_rule.forwarding_rule.id
+  priority     = 500
+}
+
+resource "google_compute_route" "avx-edge-rfc192" {
+  name         = "avx-edge-rfc192"
+  dest_range   = "192.168.0.0/16"
+  network      = google_compute_network.vpc_network.name
+  next_hop_ilb = google_compute_forwarding_rule.forwarding_rule.id
+  priority     = 500
+}

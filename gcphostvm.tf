@@ -13,10 +13,6 @@ data "google_compute_default_service_account" "default" {}
 #Availability zones
 data "google_compute_zones" "available" {}
 
-locals {
-
-}
-
 #Create the VM
 resource "google_compute_instance" "host_vm" {
   for_each = local.host_vms
@@ -54,7 +50,8 @@ resource "google_compute_instance" "host_vm" {
 
   metadata = {
     startup-script-url = "gs://${google_storage_bucket.bucket.name}/${each.key}/startup.sh"
-    user-data          = file("${path.module}/cloud-init.yaml")
+    user-data          = file("${path.module}/host-cloud-init.yaml")
+    ssh-keys           = local.vm_ssh_key
   }
 
   lifecycle {
@@ -78,4 +75,13 @@ resource "google_compute_instance_group" "instance_group" {
   network = google_compute_network.vpc_network.id
 
   instances = [for vm in google_compute_instance.host_vm : vm.id if vm.zone == data.google_compute_zones.available.names[count.index]]
+}
+
+#Validate if Edge VM is runninng
+resource "null_resource" "edge_check" {
+  for_each = google_compute_instance.host_vm
+
+  provisioner "local-exec" {
+    command = "gcloud compute ssh ${each.key} --zone=${each.value.zone} --tunnel-through-iap --command=/edge/waitvm.sh"
+  }
 }
