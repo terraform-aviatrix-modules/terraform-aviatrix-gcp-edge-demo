@@ -1,58 +1,125 @@
 #!/bin/bash
 # Configure host VM for edge instance(s)
 
+# Enable IP Forwarding
+sysctl net.ipv4.ip_forward=1
+
 # Make /edge dir
 if [ ! -d /edge ]; then
   mkdir /edge
 fi
 
-#Wait for cloud-init
-cloud-init status --wait
-if [ $? == 1 ]; then
-  echo "$(date): cloud-init status returned 1." >> /edge/error.log
-  exit 1
-fi
+# Configure UFW as wide open
+# ufw --force enable
+# ufw default allow incoming
+# ufw default allow outgoing
+# ufw default allow routed
 
-#Spot check for packages
-if [ -z "$(command -v vtysh)" ]; then
-  echo "$(date): vtysh command not found." >> /edge/error.log
-  exit 1
-fi
+# Configure UFW logging so we can detect Edge <-> Controller connections.
 
-if [ -z "$(command -v virsh)" ]; then
-  echo "$(date): virsh command not found." >> /edge/error.log
-  exit 1
-fi
-
-if [ -z "$(command -v bridge)" ]; then
-  echo "$(date): bridge command not found." >> /edge/error.log
-  exit 1
-fi
-
-# Download libvirt files from storage bucket.
-gsutil -m cp gs://${bucket}/${host_vm}/*.xml /edge/.
-if [ $? == 1 ]; then
-  echo "$(date): Some issue with gsutil." >> /edge/error.log
-  exit 1
-fi
-
-# Enable IP Forwarding
-sysctl net.ipv4.ip_forward=1
-
-# If the qcow2 file is missing, we'll download it.
-# This is typically on the first run only as existing installs are updated in place.
+# Download Edge.qcow2
+# We only get the qcow2 and ztp if the qcow2 is missing.
 if [ ! -f /var/lib/libvirt/images/edge.qcow2 ]; then
-  gsutil cp gs://${bucket}/edge.qcow2 /var/lib/libvirt/images/.
-  gsutil cp gs://${bucket}/${host_vm}/ztp.iso /var/lib/libvirt/images/.
+  mkdir -p var/lib/libvirt/images
+  while :; do
+    #Edge Qcow2?
+    gsutil cp gs://${bucket}/edge.qcow2 /var/lib/libvirt/images/.
+    if [ $? -ne 0 ]; then
+      echo "Warning: edge.qcow2 not in bucket."
+      sleep 60 #Sleep 1 min
+      continue
+    else
+      echo "edge.qcow2 downloaded."
+      break
+    fi
+  done
+
+  #ZTP iso
+  while :; do
+    gsutil cp gs://${bucket}/${host_vm}/ztp.iso /var/lib/libvirt/images/.
+    if [ $? -ne 0 ]; then
+      echo "Warning: ztp.iso not in bucket."
+      sleep 15 #Sleep 1 min
+      continue
+    else
+      echo "ztp.iso downloaded."
+      break
+    fi
+  done
 fi
 
 # Add vxlan files to directory.
 # Since the script is kicked off after the br-lan network is started, it needs to be there first.
 if [ ! -f /etc/libvirt/hooks/network ]; then
   mkdir -p /etc/libvirt/hooks
-  gsutil cp gs://${bucket}/${host_vm}/libvirt-hook-network.sh /etc/libvirt/hooks/network
+  while :; do
+    gsutil cp gs://${bucket}/${host_vm}/libvirt-hook-network.sh /etc/libvirt/hooks/network
+    if [ $? -ne 0 ]; then
+      echo "$(date): Error downloading libvirt hook for vxlan."
+      sleep 15
+      continue
+    else
+      echo "Libvirt hook script downloaded."
+      break
+    fi
   chmod o+rx /etc/libvirt/hooks/network
-  #systemctl restart libvirtd
+fi
+
+#Wait for cloud-init
+#It might be done while we copied the files.
+cloud-init status --wait
+if [ $? == 1 ]; then
+  echo "cloud-init status returned 1."
+fi
+
+# Configure FRR
+frr_restart_needed=0
+if [ -z "$(command -v vtysh)" ]; then
+  echo "vtysh command not found."
+  exit 1
+else
+  #Download FRR Config
+  grep "router bgp ${host_asn}" /etc/frr/frr.conf
+  if [ $? -ne 0 ]; then
+    mkdir -p /etc/frr
+    while :; do
+      gsutil cp gs://${bucket}/${host_vm}/frr.conf /etc/frr/frr.conf
+      if [ $? -ne 0 ]; then
+        echo "Error downloading frr.conf."
+        sleep 15
+        continue
+      else
+        echo "frr.conf downloaded."
+        frr_restart_needed=1
+        break
+      fi
+    done
+  fi
+  # Make sure BGP daemon is enabled.
+  grep "bgpd=yes" /etc/frr/daemons
+  case $? in
+    2)
+      echo "/etc/frr/daemons is missing."
+      exit 1
+      ;;
+    1)
+      echo "frr daemons updated."
+      sed -i 's/bgpd=no/bgpd=yes/g' /etc/frr/daemons
+      frr_restart_needed=1
+      ;;
+    0)
+      ;;
+  esac
+  # Restart frr
+  if [ $frr_restart_needed -eq 1 ]; then
+    systemctl restart frr
+  fi
+fi
+
+# Needed for Libvirt hook
+if [ -z "$(command -v bridge)" ]; then
+  echo "bridge command not found."
+  exit 1
 fi
 
 # Enable Guest shutdown for Libvirt
@@ -63,55 +130,63 @@ if [ -z $(grep -E "^ON_SHUTDOWN=shutdown" /etc/default/libvirt-guests) ]; then
   fi
 fi
 
-# Configure FRR
-if [ ! -f /edge/frr-done ]; then
-  touch /edge/frr-done
-  sed -i 's/bgpd=no/bgpd=yes/g' /etc/frr/daemons
-  gsutil cp gs://${bucket}/${host_vm}/frr.conf /etc/frr/frr.conf
-  systemctl restart frr
-fi
-
-# Libvirt setup
-# Remove default network
-if [ ! -z "$(virsh net-list --all --name | grep default)" ]; then
-  virsh net-undefine default
-  virsh net-destroy default
-fi
-
 # Register and start libvirt networks
-if [ -z "$(virsh net-list --name --all | grep br-wan)" ]; then
-  virsh net-define /edge/br-wan.xml
-fi
-
-if [ -z "$(virsh net-list --name | grep br-wan)" ]; then
-  virsh net-start br-wan
-  virsh net-autostart br-wan
-fi
-
-if [ -z "$(virsh net-list --name --all | grep br-lan)" ]; then
-  virsh net-define /edge/br-lan.xml
-fi
-
-if [ -z "$(virsh net-list --name | grep br-lan)" ]; then
-  virsh net-start br-lan
-  virsh net-autostart br-lan
-fi
-
-if [ -z "$(virsh net-list --name --all | grep br-mgmt)" ]; then
-  virsh net-define /edge/br-mgmt.xml
-fi
-
-if [ -z "$(virsh net-list --name | grep br-mgmt)" ]; then
-  virsh net-start br-mgmt
-  virsh net-autostart br-mgmt
-fi
+netlist=$(virsh net-list --all)
+for netname in "default" "br-wan" "br-lan" "br-mgmt"; do
+  net=($(echo $netlist | sed -rn "s/.*($netname) ([[:lower:]]*) (yes|no) (yes|no).*/\1\n\2\n\3\n\4/p"))
+  #default
+  if [ $netname == "default"]; then
+    if [ ${net[0]} == "default"; ] then
+      if [ ${net[1]} == "active"]; do virsh net-destory default; fi
+      if [ ${net[3]} == "yes"]; do virsh net-undefine default; fi
+    fi
+    continue
+  #network not defined
+  if [ -z ${net[0]} ]; then
+    while :; do
+      gsutil cp gs://${bucket}/${host_vm}/$net.xml /edge/.
+      if [ $? -ne 0 ]; then
+        echo "Error downloading $net.xml."
+        sleep 15
+        continue
+      else
+        echo "$net.xml downloaded."
+        break
+      fi
+    done
+    virsh net-define /edge/$net.xml
+    virsh net-start $net
+    virsh net-autostart $net
+    continue
+  fi
+  #network defined. Is it running? 
+  if [ ${net[1]} != "active"]; do
+    virsh net-start $net
+    if [ ${net[2]} != "yes"; do virsh net-autostart $net; fi
+    continue
+  fi
+done
 
 # Register Edge VM and start it
-if [ -z "$(virsh list --name --all | grep ${edge_vm})" ]; then
+vmstatus=$(virsh list --all | sed -rn "s/.*$edge_vm ([[:lower:]]*)/\1/p")
+if [ -z $vmstatus ]; then
+  while :; do
+    gsutil cp gs://${bucket}/${host_vm}/vm.xml /edge/.
+    if [ $? -ne 0 ]; then
+      echo "Error downloading vm.xml."
+      sleep 15
+      continue
+    else
+      echo "$vm.xml downloaded."
+      break
+    fi
+  done
   virsh define /edge/vm.xml
+  virsh start ${edge_vm}
+  virsh autostart ${edge_vm}
 fi
 
-if [ -z "$(virsh list  --name | grep ${edge_vm})" ]; then
+if [ $vmstatus != "running" ]; then
   virsh start ${edge_vm}
   virsh autostart ${edge_vm}
 fi

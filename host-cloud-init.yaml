@@ -9,5 +9,6 @@ packages:
   - libvirt-clients
   - inetutils-traceroute
   - iperf3
+  - netstat-nat
 package_upgrade: true
 package_reboot_if_required: true
