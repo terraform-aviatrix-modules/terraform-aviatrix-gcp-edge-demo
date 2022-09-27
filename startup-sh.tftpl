@@ -68,7 +68,7 @@ fi
 
 #Wait for cloud-init
 #It might be done while we copied the files.
-cloud-init status --wait
+cloud-init status --wait > /dev/null 2>&1
 if [ $? == 1 ]; then
   echo "cloud-init status returned 1."
 fi
@@ -80,7 +80,7 @@ if [ -z "$(command -v vtysh)" ]; then
   exit 1
 else
   #Download FRR Config
-  grep "router bgp ${host_asn}" /etc/frr/frr.conf
+  grep -q "router bgp ${host_asn}" /etc/frr/frr.conf
   if [ $? -ne 0 ]; then
     mkdir -p /etc/frr
     while :; do
@@ -97,7 +97,7 @@ else
     done
   fi
   # Make sure BGP daemon is enabled.
-  grep "bgpd=yes" /etc/frr/daemons
+  grep -q "bgpd=yes" /etc/frr/daemons
   case $? in
     2)
       echo "/etc/frr/daemons is missing."
@@ -162,7 +162,7 @@ for netname in "default" "br-wan" "br-lan" "br-mgmt"; do
     continue
   fi
   #network defined. Is it running? 
-  if [ $${net[1]} != "active"]; do
+  if [ $${net[1]} != "active"]; then
     virsh net-start $net
     if [ $${net[2]} != "yes"; then virsh net-autostart $net; fi
     continue
