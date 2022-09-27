@@ -15,7 +15,7 @@ resource "aviatrix_edge_spoke" "edge" {
   lan_interface_ip_prefix = "${each.value.lan_edge_ip}/${each.value.lan_prefix_size}"
 
   ztp_file_type          = "iso"
-  ztp_file_download_path = "${path.module}/${each.key}/"
+  ztp_file_download_path = "${path.root}/${each.key}/"
 
   local_as_number = var.edge_vm_asn
 }

@@ -50,7 +50,7 @@ resource "google_compute_instance" "host_vm" {
 
   metadata = {
     startup-script-url = "gs://${google_storage_bucket.bucket.name}/${each.key}/startup.sh"
-    user-data          = file("${path.module}/host-cloud-init.yaml")
+    user-data          = file("${path.root}/host-cloud-init.yaml")
     ssh-keys           = local.vm_ssh_key
   }
 

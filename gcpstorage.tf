@@ -119,7 +119,7 @@ resource "google_storage_bucket_object" "edge_ztp" {
   for_each = local.host_vms
 
   name   = "${each.key}/ztp.iso"
-  source = "${path.module}/${each.key}/${each.value.edge_vm}-${local.pov_edge_site}.iso"
+  source = "${path.root}/${each.key}/${each.value.edge_vm}-${local.pov_edge_site}.iso"
   bucket = google_storage_bucket.bucket.name
 
   lifecycle {
