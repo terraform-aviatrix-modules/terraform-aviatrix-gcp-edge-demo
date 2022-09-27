@@ -146,17 +146,17 @@ for netname in "default" "br-wan" "br-lan" "br-mgmt"; do
   #network not defined
   if [ -z $${net[0]} ]; then
     while :; do
-      gsutil cp gs://${bucket}/${host_vm}/$net.xml /edge/.
+      gsutil cp gs://${bucket}/${host_vm}/$netname.xml /edge/.
       if [ $? -ne 0 ]; then
-        echo "Error downloading $net.xml."
+        echo "Error downloading $netname.xml."
         sleep 15
         continue
       else
-        echo "$net.xml downloaded."
+        echo "$netname.xml downloaded."
         break
       fi
     done
-    virsh net-define /edge/$net.xml
+    virsh net-define /edge/$netname.xml
     virsh net-start $net
     virsh net-autostart $net
     continue
