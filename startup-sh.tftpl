@@ -141,7 +141,8 @@ for netname in "default" "br-wan" "br-lan" "br-mgmt"; do
       if [ $${net[1]} == "active"]; then virsh net-destory default; fi
       if [ $${net[3]} == "yes"]; then virsh net-undefine default; fi
     fi
-    continue
+  fi
+  continue
   #network not defined
   if [ -z $${net[0]} ]; then
     while :; do
