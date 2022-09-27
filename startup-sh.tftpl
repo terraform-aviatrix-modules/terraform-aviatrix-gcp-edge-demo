@@ -62,6 +62,7 @@ if [ ! -f /etc/libvirt/hooks/network ]; then
       echo "Libvirt hook script downloaded."
       break
     fi
+  done
   chmod o+rx /etc/libvirt/hooks/network
 fi
 
