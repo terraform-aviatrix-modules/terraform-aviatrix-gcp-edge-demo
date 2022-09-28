@@ -40,7 +40,7 @@ resource "google_compute_instance" "host_vm" {
     network_ip = each.value.vpc_ip
     nic_type   = "GVNIC"
     access_config {
-      nat_ip = resource.google_compute_address.host_vm_pip[each.key].address
+      nat_ip = google_compute_address.host_vm_pip[each.key].address
     }
   }
 

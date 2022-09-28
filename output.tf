@@ -3,7 +3,7 @@ output "host_vm_details" {
   value       = local.host_vms
 }
 
-output "host_pip_details" {
+output "host_vm_pip" {
   description = "Host and edge VM details."
   value       = google_compute_address.host_vm_pip
 }
