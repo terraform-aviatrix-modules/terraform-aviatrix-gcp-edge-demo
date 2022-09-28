@@ -9,14 +9,6 @@ if [ ! -d /edge ]; then
   mkdir /edge
 fi
 
-# Configure UFW as wide open
-# ufw --force enable
-# ufw default allow incoming
-# ufw default allow outgoing
-# ufw default allow routed
-
-# Configure UFW logging so we can detect Edge <-> Controller connections.
-
 # Download Edge.qcow2
 # We only get the qcow2 and ztp if the qcow2 is missing.
 if [ ! -f /var/lib/libvirt/images/edge.qcow2 ]; then
