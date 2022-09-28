@@ -133,7 +133,7 @@ resource "google_storage_bucket_object" "edge_ztp" {
   ]
 }
 
-resource "google_storage_bucket_object" "edge-check.py" {
+resource "google_storage_bucket_object" "edge_check" {
   name   = "edge-check.py"
   source = "${path.module}/edge-check.py"
   bucket = google_storage_bucket.bucket.name
