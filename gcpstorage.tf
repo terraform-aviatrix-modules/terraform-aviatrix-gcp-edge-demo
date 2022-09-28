@@ -132,3 +132,9 @@ resource "google_storage_bucket_object" "edge_ztp" {
     aviatrix_edge_spoke.edge
   ]
 }
+
+resource "google_storage_bucket_object" "edge-check.py" {
+  name   = "edge-check.py"
+  source = "${path.module}/edge-check.py"
+  bucket = google_storage_bucket.bucket.name
+}

@@ -52,6 +52,8 @@ resource "google_compute_instance" "host_vm" {
     startup-script-url = "gs://${google_storage_bucket.bucket.name}/${each.key}/startup.sh"
     user-data          = file("${path.module}/host-cloud-init.yaml")
     ssh-keys           = local.vm_ssh_key
+    edge-site-name     = local.pov_edge_site
+    edge-vm-name       = each.value.edge_vm
   }
 
   lifecycle {
@@ -61,8 +63,7 @@ resource "google_compute_instance" "host_vm" {
   }
 
   depends_on = [
-    google_storage_bucket_object.startup_script,
-    google_storage_bucket_object.qcow2
+    google_storage_bucket_object.startup_script
   ]
 }
 

@@ -10,5 +10,6 @@ packages:
   - inetutils-traceroute
   - iperf3
   - netstat-nat
+  - python3
 package_upgrade: true
 package_reboot_if_required: true
