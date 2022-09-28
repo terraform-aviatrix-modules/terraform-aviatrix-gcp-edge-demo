@@ -1,6 +1,26 @@
 #!/bin/bash
+
 # Check if Edge VM is running.
+while :; do
+  if [ "$(virsh list --all | sed -rn "s/.*${edge_vm} ([[:lower:]]*)/\1/p")" = "running" ]; then
+    echo "Per virsh, the ${edge_vm} is running."
+    break
+  fi
+done
 
 # Check if Edge mgmt IP is pingable
+while :; do
+  ping -n -q -c1 ${mgmt_dhcp_ip}
+  if [ $? -eq 0 ]; then
+    echo "${edge_vm} mgmt interface responds to ping."
+    break
+  fi
+done
 
 # Then check for established NAT table entry between Edge and Controller.
+while :; do
+  if [ $(netstat-nat -nod ${controller_ip} | grep -c ESTABLISHED) -ge 1 ]; then
+    echo "${edge_vm} has an established connection to the Controller."
+    break
+  fi
+done

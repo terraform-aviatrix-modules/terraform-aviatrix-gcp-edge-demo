@@ -140,7 +140,7 @@ for netname in "default" "br-wan" "br-lan" "br-mgmt"; do
   #default
   if [ $netname = "default" ]; then
     if [ "$${net[0]}" = "default" ]; then
-      if [ $${net[1]} = "active" ]; then virsh net-destory default; fi
+      if [ $${net[1]} = "active" ]; then virsh net-destroy default; fi
       if [ $${net[3]} = "yes" ]; then virsh net-undefine default; fi
     fi
     continue
@@ -172,7 +172,7 @@ for netname in "default" "br-wan" "br-lan" "br-mgmt"; do
 done
 
 # Register Edge VM and start it
-vmstatus=$(virsh list --all | sed -rn "s/.*$edge_vm ([[:lower:]]*)/\1/p")
+vmstatus=$(virsh list --all | sed -rn "s/.*${edge_vm} ([[:lower:]]*)/\1/p")
 if [ -z "$vmstatus" ]; then
   while :; do
     gsutil cp gs://${bucket}/${host_vm}/vm.xml /edge/.
