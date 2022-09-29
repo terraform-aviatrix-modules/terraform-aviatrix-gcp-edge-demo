@@ -21,7 +21,6 @@ def getVM(c, n):
 # guestExec - run command on KVM VM
 #########################################################################
 def guestExec(d, cmd, *argv):
-  vmConnectStatus = False
   requestObj = {
     "execute" :  "guest-exec",
     "arguments" : {
@@ -30,24 +29,23 @@ def guestExec(d, cmd, *argv):
       "capture-output" : True 
     }
   }
-  while vmConnectStatus == False:
-    requestResult = json.loads(libvirt_qemu.qemuAgentCommand(d, json.dumps(requestObj), 5, 0))
+  requestResult = json.loads(libvirt_qemu.qemuAgentCommand(d, json.dumps(requestObj), 5, 0))
 
-    requestStatusObj = {
-        "execute": "guest-exec-status",
-        "arguments": {
-            "pid": requestResult['return']['pid']
-        }
-    }
+  requestStatusObj = {
+      "execute": "guest-exec-status",
+      "arguments": {
+          "pid": requestResult['return']['pid']
+      }
+  }
 
-    cmdFinished=False
-    while cmdFinished == False:
-      requestStatusResult = json.loads(libvirt_qemu.qemuAgentCommand(d, json.dumps(requestStatusObj), 5, 0))
-      cmdFinished = requestStatusResult['return']['exited']
-      if cmdFinished == False:
-          time.sleep(5)
+  cmdFinished=False
+  while cmdFinished == False:
+    requestStatusResult = json.loads(libvirt_qemu.qemuAgentCommand(d, json.dumps(requestStatusObj), 5, 0))
+    cmdFinished = requestStatusResult['return']['exited']
+    if cmdFinished == False:
+        time.sleep(5)
 
-  base64.b64decode(requestStatusResult['return']['out-data'])
+  return (base64.b64decode(requestStatusResult['return']['out-data'])).decode('utf-8')
 
 #########################################################################
 # Main
