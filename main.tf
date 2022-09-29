@@ -10,9 +10,9 @@ resource "local_sensitive_file" "root_ssh" {
   content  = tls_private_key.root_ssh.private_key_openssh
 }
 
-resource "local_sensitive_file" "root_ssh_pub" {
-  filename = "${path.root}/ssh/root.pub"
-  content  = tls_private_key.root_ssh.public_key_openssh
+#Need to let Terraform contact the host VMs.
+data "http" "my_pip" {
+  url = "http://ifconfig.me"
 }
 
 resource "local_file" "libvirt_br_wan_xml" {
@@ -63,8 +63,3 @@ resource "local_file" "libvirt_hook_network" {
   content  = replace(templatefile("${path.module}/libvirt-hook-network.tftpl", each.value), "/\r/", "")
   filename = "${path.root}/${each.key}/libvirt-hook-network.sh"
 }
-
-# Get current Public IP
-# data "http" "my_public_ip" {
-#   url = "http://ifconfig.me"
-# }

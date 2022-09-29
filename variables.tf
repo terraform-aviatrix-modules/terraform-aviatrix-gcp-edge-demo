@@ -100,7 +100,7 @@ locals {
 
   host_vpc_name    = "${var.pov_prefix}-vpc"
   host_subnet_name = "${var.pov_prefix}-subnet"
-  host_ssh         = concat(["35.235.240.0/20"], var.admin_cidr) #GCP IAP prefix for portal ssh
+  host_ssh         = concat(["35.235.240.0/20", data.http.my_pip.response_body], var.admin_cidr) #GCP IAP prefix for portal ssh
   #host_ssh         = concat(["35.235.240.0/20", data.http.my_public_ip.response_body ], var.admin_cidr)  #GCP IAP prefix for portal ssh
   host_allow_all = concat([var.host_vm_cidr, "130.211.0.0/22", "35.191.0.0/16"], var.external_cidrs) #We allow all from the external cidrs and the host_vm_cidr itself.
   host_vm_prefix = "${var.pov_prefix}-host"
