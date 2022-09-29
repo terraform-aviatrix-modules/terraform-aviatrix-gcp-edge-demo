@@ -6,8 +6,18 @@ resource "tls_private_key" "root_ssh" {
 }
 
 resource "local_sensitive_file" "root_ssh" {
-  filename = "${path.root}/root.pem"
+  filename = "${path.root}/ssh/root"
   content  = tls_private_key.root_ssh.private_key_openssh
+}
+
+resource "local_sensitive_file" "root_ssh" {
+  filename = "${path.root}/ssh/root.pub"
+  content  = tls_private_key.root_ssh.public_key_openssh
+}
+
+resource "local_sensitive_file" "root_ssh" {
+  filename = "${path.root}/ssh/root.pub"
+  content  = tls_private_key.root_ssh.pp
 }
 
 resource "local_file" "libvirt_br_wan_xml" {
