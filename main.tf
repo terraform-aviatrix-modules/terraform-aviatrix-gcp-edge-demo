@@ -1,6 +1,15 @@
 # Create files for Host and Edge VM deployment.
 # Files are for Azure or GCP, or really any functional Libvirt deployment
 
+resource "tls_private_key" "root_ssh" {
+  algorithm = "ED25519"
+}
+
+resource "local_sensitive_file" "root_ssh" {
+  filename = "${path.root}/root.pem"
+  content  = tls_private_key.root_ssh.private_key_openssh
+}
+
 resource "local_file" "libvirt_br_wan_xml" {
   for_each = local.host_vms
 
