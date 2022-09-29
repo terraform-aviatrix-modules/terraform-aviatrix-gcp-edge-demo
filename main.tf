@@ -10,7 +10,7 @@ resource "local_sensitive_file" "root_ssh" {
   content  = tls_private_key.root_ssh.private_key_openssh
 }
 
-resource "local_sensitive_file" "root_ssh" {
+resource "local_sensitive_file" "root_ssh_pub" {
   filename = "${path.root}/ssh/root.pub"
   content  = tls_private_key.root_ssh.public_key_openssh
 }
