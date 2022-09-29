@@ -50,17 +50,17 @@ resource "google_compute_instance" "host_vm" {
 
   metadata = {
     startup-script-url = "gs://${google_storage_bucket.bucket.name}/${each.key}/startup.sh"
-    user-data          = replace(templatefile("${path.module}/host-cloud-init.tftpl", { root_key = tls_private_key.root_ssh.public_key_openssh }), "/\r/", "")
+    user-data          = replace(file("${path.module}/host-cloud-init.yaml"), "/\r/", "")
     ssh-keys           = local.vm_ssh_key
     edge-site-name     = local.pov_edge_site
     edge-vm-name       = each.value.edge_vm
   }
 
-  lifecycle {
-    ignore_changes = [
-      metadata["ssh-keys"]
-    ]
-  }
+  # lifecycle {
+  #   ignore_changes = [
+  #     metadata["ssh-keys"]
+  #   ]
+  # }
 
   depends_on = [
     google_storage_bucket_object.startup_script

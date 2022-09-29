@@ -15,7 +15,3 @@ package_upgrade: true
 package_reboot_if_required: true
 disable_root: false
 disable_root_opts: ""
-users:
-  - name: root
-    ssh_authorized_keys:
-      - ${root_key}
