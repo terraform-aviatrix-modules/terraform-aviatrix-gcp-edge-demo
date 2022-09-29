@@ -15,11 +15,6 @@ resource "local_sensitive_file" "root_ssh_pub" {
   content  = tls_private_key.root_ssh.public_key_openssh
 }
 
-resource "local_sensitive_file" "root_ssh" {
-  filename = "${path.root}/ssh/root.pub"
-  content  = tls_private_key.root_ssh.pp
-}
-
 resource "local_file" "libvirt_br_wan_xml" {
   for_each = local.host_vms
 
