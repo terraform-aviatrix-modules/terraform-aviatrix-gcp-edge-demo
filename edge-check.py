@@ -1,7 +1,7 @@
 # Script to validate if the Edge Gateway is indeed up.
 
 import libvirt, libvirt_qemu
-import sys, json, base64, time, re
+import sys, json, base64, time, re, requests
 
 #########################################################################
 # getVM - is a VM running, get config
@@ -50,7 +50,7 @@ def guestExec(d, cmd, *argv):
 #########################################################################
 # Main
 #########################################################################
-edgeVmName = "avx-mattk-edge-vm-1"
+edgeVmName = (requests.get("http://metadata.google.internal/computeMetadata/v1/instance/attributes/edge-vm-name", headers = {"Metadata-Flavor": "Google"})).text
 maxLoop = 5
 
 #Connect to Libvirt

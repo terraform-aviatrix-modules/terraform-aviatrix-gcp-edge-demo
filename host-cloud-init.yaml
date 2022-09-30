@@ -11,6 +11,8 @@ packages:
   - iperf3
   - netstat-nat
   - python3
+  - python3-googleapi
+  - python3-libvirt
 package_upgrade: true
 package_reboot_if_required: true
 disable_root: false

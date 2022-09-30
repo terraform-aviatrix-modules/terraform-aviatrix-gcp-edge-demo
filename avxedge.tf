@@ -47,6 +47,29 @@ resource "aviatrix_edge_spoke_transit_attachment" "to_transit_gw" {
 
   depends_on = [
     google_compute_instance.host_vm,
-    #null_resource.edge_check
+    null_resource.edge_check
+  ]
+}
+
+
+#Validate if Edge VM is runninng
+resource "null_resource" "edge_check" {
+  for_each = google_compute_address.host_vm_pip
+
+  connection {
+    type        = "ssh"
+    user        = "root"
+    private_key = tls_private_key.root_ssh.private_key_openssh
+    host        = each.value.address
+  }
+
+  provisioner "remote-exec" {
+    inline = [
+      "python3 /edge/ecccdge-check.sh"
+    ]
+  }
+
+  depends_on = [
+    google_compute_instance.host_vm
   ]
 }

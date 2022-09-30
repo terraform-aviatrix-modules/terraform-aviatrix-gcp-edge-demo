@@ -77,12 +77,3 @@ resource "google_compute_instance_group" "instance_group" {
 
   instances = [for vm in google_compute_instance.host_vm : vm.id if vm.zone == data.google_compute_zones.available.names[count.index]]
 }
-
-# #Validate if Edge VM is runninng
-# resource "null_resource" "edge_check" {
-#   for_each = google_compute_instance.host_vm
-
-#   provisioner "local-exec" {
-#     command = "gcloud compute ssh ${each.key} --zone=${each.value.zone} --tunnel-through-iap --command=/edge/edge-check.sh"
-#   }
-# }
