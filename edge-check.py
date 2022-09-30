@@ -29,7 +29,7 @@ def guestExec(d, test, cmd, *argv):
       "capture-output" : True 
     }
   }
-  cmdStatus = False
+  testStatus = False
   maxLoop = 5
   loop = 0
   while testStatus == False and loop != maxLoop:
@@ -74,7 +74,7 @@ except libvirt.libvirtError as e:
 #Get VM status from libvirt
 loop = 0
 dom = ""
-while type(dom) is str or loop != maxLoop:
+while type(dom) is str and loop != maxLoop:
   dom = getVM(conn, edgeVmName)
   if type(dom) is str:
     time.sleep(30)
