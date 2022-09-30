@@ -66,6 +66,7 @@ resource "null_resource" "edge_check" {
   provisioner "remote-exec" {
     inline = [
       "gsutil cp gs://${google_storage_bucket.bucket.name}/${google_storage_bucket_object.edge_check.name} /usr/local/bin/edge-check.py",
+      "cloud-init status --wait",
       "python3 /usr/local/bin/edge-check.py"
     ]
   }
