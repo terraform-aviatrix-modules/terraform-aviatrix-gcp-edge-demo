@@ -18,6 +18,11 @@ resource "aviatrix_edge_spoke" "edge" {
   ztp_file_download_path = "${path.root}/${each.key}/"
 
   local_as_number = var.edge_vm_asn
+
+  provisioner "local-exec" {
+    when = destroy
+    command = "rm ${path.root}/${each.key}/${each.value.edge_vm}-${local.pov_edge_site}.iso"
+  }
 }
 
 # Connect Edge VMs to host VMs with BGPoLAN
@@ -34,7 +39,7 @@ resource "aviatrix_edge_spoke_external_device_conn" "to_host_vm" {
 
   depends_on = [
     google_compute_instance.host_vm,
-    #null_resource.edge_check
+    null_resource.edge_check
   ]
 }
 
