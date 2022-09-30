@@ -42,21 +42,6 @@ if [ ! -f /var/lib/libvirt/images/ztp.iso ]; then
   done
 fi
 
-if [ ! -f /edge/edge-check.py ]; then
-  #edge-check.py
-  while :; do
-    gsutil cp gs://${bucket}/edge_check.py /edge/edge_check.py
-    if [ $? -ne 0 ]; then
-      echo "Warning: edge_check.py not in bucket."
-      sleep 15 #Sleep 1 min
-      continue
-    else
-      echo "edge_check.py downloaded."
-      break
-    fi
-  done
-fi
-
 # Add vxlan files to directory.
 # Since the script is kicked off after the br-lan network is started, it needs to be there first.
 if [ ! -f /etc/libvirt/hooks/network ]; then

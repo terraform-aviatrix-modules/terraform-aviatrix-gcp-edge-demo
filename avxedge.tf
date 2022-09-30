@@ -65,11 +65,13 @@ resource "null_resource" "edge_check" {
 
   provisioner "remote-exec" {
     inline = [
-      "python3 /edge/edge-check.py"
+      "gsutil cp gs://${google_storage_bucket.bucket.name}/${google_storage_bucket_object.edge_check.name} /usr/local/bin/edge-check.py",
+      "python3 /usr/local/bin/edge-check.py"
     ]
   }
 
   depends_on = [
-    google_compute_instance.host_vm
+    google_compute_instance.host_vm,
+    google_storage_bucket_object.edge_check
   ]
 }
