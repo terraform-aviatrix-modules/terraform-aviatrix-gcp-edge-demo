@@ -20,7 +20,7 @@ def getVM(c, n):
 #########################################################################
 # guestExec - run command on KVM VM
 #########################################################################
-def guestExec(d, cmd, *argv):
+def guestExec(d, test, cmd, *argv):
   requestObj = {
     "execute" :  "guest-exec",
     "arguments" : {
@@ -29,23 +29,33 @@ def guestExec(d, cmd, *argv):
       "capture-output" : True 
     }
   }
-  requestResult = json.loads(libvirt_qemu.qemuAgentCommand(d, json.dumps(requestObj), 5, 0))
+  cmdStatus = False
+  maxLoop = 5
+  loop = 0
+  while testStatus == False and loop != maxLoop:
+    requestResult = json.loads(libvirt_qemu.qemuAgentCommand(d, json.dumps(requestObj), 5, 0))
 
-  requestStatusObj = {
+    requestStatusObj = {
       "execute": "guest-exec-status",
       "arguments": {
-          "pid": requestResult['return']['pid']
+        "pid": requestResult['return']['pid']
       }
-  }
+    }
 
-  cmdFinished=False
-  while cmdFinished == False:
-    requestStatusResult = json.loads(libvirt_qemu.qemuAgentCommand(d, json.dumps(requestStatusObj), 5, 0))
-    cmdFinished = requestStatusResult['return']['exited']
-    if cmdFinished == False:
-        time.sleep(5)
+    cmdFinished = False
+    while cmdFinished == False:
+      requestStatusResult = json.loads(libvirt_qemu.qemuAgentCommand(d, json.dumps(requestStatusObj), 5, 0))
+      cmdFinished = requestStatusResult['return']['exited']
+      if cmdFinished == False:
+          time.sleep(5)
+          
+    testStatus = bool(re.search(test,(base64.b64decode(requestStatusResult['return']['out-data'])).decode('utf-8')))
 
-  return (base64.b64decode(requestStatusResult['return']['out-data'])).decode('utf-8')
+    if testStatus == False:
+      time.sleep(30)
+      loop = loop + 1
+    
+  return testStatus
 
 #########################################################################
 # Main
@@ -64,7 +74,7 @@ except libvirt.libvirtError as e:
 #Get VM status from libvirt
 loop = 0
 dom = ""
-while type(dom) is str or loop == maxLoop:
+while type(dom) is str or loop != maxLoop:
   dom = getVM(conn, edgeVmName)
   if type(dom) is str:
     time.sleep(30)
@@ -75,28 +85,14 @@ if type(dom) is str:
   sys.exit(1)
 
 # Connect to the VM and get network connectivity status.
-vmConnectStatus = False
-loop = 0
-while vmConnectStatus == False or loop == maxLoop:
-  result = guestExec(dom, 'python', "/home/ubuntu/avx-edge/interface.py", "test", "--connect")
-  vmConnectStatus = bool(re.search('succeeded', result))
-  if vmConnectStatus == False:
-    time.sleep(30)
-    loop = loop + 1
-
-if vmConnectStatus == False:
+if guestExec(dom, 'succeeded', 'python', "/home/ubuntu/avx-edge/interface.py", "test", "--connect") == False:
   print("{} not reported connected. Check firewall rules, maybe.".format(edgeVmName))
   sys.exit(1)
 
 # Connect to VM and check Conduit connectivity.
 # If this succeeds, the Edge is up and connected.
-conduitStatus = False
-loop = 0
-while conduitStatus == False or loop == maxLoop:
-  result = guestExec(dom, 'python', "/home/ubuntu/avx-edge/helper.py", "conduit_ping")
-  conduitStatus = bool(re.search('succeeded', result))
-  if conduitStatus == False:
-    time.sleep(30)
-    loop = loop + 1
-  if loop == maxLoop:
-    break
+if guestExec(dom, 'succeeded', 'python', "/home/ubuntu/avx-edge/helper.py", "conduit_ping") == False:
+  print("{} not connected to conduit.".format(edgeVmName))
+  sys.exit(1)
+
+sys.exit(0)
