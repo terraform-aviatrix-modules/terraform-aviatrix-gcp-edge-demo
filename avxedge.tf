@@ -21,7 +21,7 @@ resource "aviatrix_edge_spoke" "edge" {
 
   provisioner "local-exec" {
     when = destroy
-    command = "rm ${path.root}/${each.key}/${each.value.edge_vm}-${local.pov_edge_site}.iso"
+    command = "rm ${self.ztp_file_download_path}/${self.gw_name}-${self.site_id}.iso"
   }
 }
 
