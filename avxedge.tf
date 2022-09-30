@@ -65,7 +65,7 @@ resource "null_resource" "edge_check" {
 
   provisioner "remote-exec" {
     inline = [
-      "python3 /edge/edge-check.sh"
+      "python3 /edge/edge-check.py"
     ]
   }
 
