@@ -55,8 +55,8 @@ resource "aviatrix_edge_spoke_external_device_conn" "to_host_vm" {
 resource "aviatrix_edge_spoke_transit_attachment" "to_transit_gw" {
   for_each = local.edge_to_transit_gateways
 
-  spoke_gw_name   = element(split(each.key, "~"), 0)
-  transit_gw_name = element(split(each.key, "~"), 1)
+  spoke_gw_name   = element(split("~", each.key), 0)
+  transit_gw_name = element(split("~", each.key), 1)
 
   depends_on = [
     google_compute_instance.host_vm,
