@@ -46,6 +46,7 @@ resource "aviatrix_edge_spoke_external_device_conn" "to_host_vm" {
 
   depends_on = [
     google_compute_instance.host_vm,
+    aviatrix_edge_spoke.edge,
     # null_resource.edge_check
   ]
 }
@@ -59,6 +60,7 @@ resource "aviatrix_edge_spoke_transit_attachment" "to_transit_gw" {
 
   depends_on = [
     google_compute_instance.host_vm,
+    aviatrix_edge_spoke.edge,
     # null_resource.edge_check
   ]
 }
