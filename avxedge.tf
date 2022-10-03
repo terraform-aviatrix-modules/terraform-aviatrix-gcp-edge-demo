@@ -22,6 +22,13 @@ resource "aviatrix_edge_spoke" "edge" {
   provisioner "local-exec" {
     when = destroy
     command = "rm ${self.ztp_file_download_path}/${self.gw_name}-${self.site_id}.iso"
+    on_failure = continue
+  }
+
+  provisioner "local-exec" {
+    when = destroy
+    command = "del ${self.ztp_file_download_path}/${self.gw_name}-${self.site_id}.iso"
+    on_failure = continue
   }
 }
 
