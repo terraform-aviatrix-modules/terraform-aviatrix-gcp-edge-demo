@@ -2,7 +2,7 @@
 Deploy Aviatrix Edge 2.0 in GCP (and eventually Azure.) AWS doesn't support nested virtualization, except on .metal instances.
 
 # Example
-
+```
 module "avxedgedemo" {
   source = "github.com/MatthewKazmar/avxedgedemo"
 
@@ -20,3 +20,4 @@ module "avxedgedemo" {
   external_cidrs = [] # FRR will routes these cidrs to the GCP default GW
   transit_gateways = [ "transit-gcp-1", "transit-gcp-2" ]
 }
+```
