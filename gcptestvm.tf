@@ -1,5 +1,14 @@
 #Deploy test VM
 
+resource "tls_private_key" "test_ssh" {
+  algorithm = "ED25519"
+}
+
+resource "local_sensitive_file" "test_ssh" {
+  filename = "${path.root}/ssh/test"
+  content  = tls_private_key.test_ssh.private_key_openssh
+}
+
 #Create VM PIP
 resource "google_compute_address" "test_vm_pip" {
   name = "${local.test_vm_name}-pip"
@@ -37,7 +46,7 @@ resource "google_compute_instance" "test_vm" {
 
   metadata = {
     user-data = file("${path.module}/test-cloud-init.yaml")
-    ssh-keys  = local.vm_ssh_key
+    ssh-keys  = local.test_vm_ssh_key
   }
 
   lifecycle {

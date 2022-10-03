@@ -20,14 +20,14 @@ resource "aviatrix_edge_spoke" "edge" {
   local_as_number = var.edge_vm_asn
 
   provisioner "local-exec" {
-    when = destroy
-    command = "rm ${self.ztp_file_download_path}${self.gw_name}-${self.site_id}.iso"
+    when       = destroy
+    command    = "rm ${self.ztp_file_download_path}${self.gw_name}-${self.site_id}.iso"
     on_failure = continue
   }
 
   provisioner "local-exec" {
-    when = destroy
-    command = "del ${self.ztp_file_download_path}${self.gw_name}-${self.site_id}.iso"
+    when       = destroy
+    command    = "del ${self.ztp_file_download_path}${self.gw_name}-${self.site_id}.iso"
     on_failure = continue
   }
 }

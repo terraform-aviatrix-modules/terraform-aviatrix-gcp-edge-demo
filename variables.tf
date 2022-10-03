@@ -107,8 +107,9 @@ locals {
 
   test_vm_name = "${var.pov_prefix}-test-vm"
 
-  user_ssh_key = var.vm_ssh_key == "" ? "" : "\n${regex("([[:alnum:]]*)@", var.vm_ssh_key)[0]}:${var.vm_ssh_key}" # Have to format the user key appropriately.
-  vm_ssh_key   = "root:${chomp(tls_private_key.root_ssh.public_key_openssh)} root${local.user_ssh_key}"
+  user_ssh_key    = var.vm_ssh_key == "" ? "" : "\n${regex("([[:alnum:]]*)@", var.vm_ssh_key)[0]}:${var.vm_ssh_key}" # Have to format the user key appropriately.
+  host_vm_ssh_key = "root:${chomp(tls_private_key.root_ssh.public_key_openssh)} root${local.user_ssh_key}"
+  test_vm_ssh_key = "avx:${chomp(tls_private_key.test_ssh.public_key_openssh)} avx${local.user_ssh_key}"
 
   edge_vm_prefix = "${var.pov_prefix}-edge"
 

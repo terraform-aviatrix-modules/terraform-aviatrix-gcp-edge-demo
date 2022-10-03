@@ -51,7 +51,7 @@ resource "google_compute_instance" "host_vm" {
   metadata = {
     startup-script-url = "gs://${google_storage_bucket.bucket.name}/${each.key}/startup.sh"
     user-data          = replace(file("${path.module}/host-cloud-init.yaml"), "/\r/", "")
-    ssh-keys           = local.vm_ssh_key
+    ssh-keys           = local.host_vm_ssh_key
     edge-site-name     = local.pov_edge_site
     edge-vm-name       = each.value.edge_vm
   }
