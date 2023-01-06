@@ -43,11 +43,11 @@ resource "aviatrix_edge_spoke_external_device_conn" "to_host_vm" {
   bgp_remote_as_num = var.host_vm_asn
   local_lan_ip      = each.value.lan_edge_ip
   remote_lan_ip     = each.value.lan_bridge_ip
+  number_of_retries = 2
 
   depends_on = [
     google_compute_instance.host_vm,
-    aviatrix_edge_spoke.edge,
-    # null_resource.edge_check
+    aviatrix_edge_spoke.edge
   ]
 }
 
@@ -58,36 +58,10 @@ resource "aviatrix_edge_spoke_transit_attachment" "to_transit_gw" {
   spoke_gw_name               = element(split("~", each.key), 0)
   transit_gw_name             = element(split("~", each.key), 1)
   enable_over_private_network = false
+  number_of_retries = 2
 
   depends_on = [
     google_compute_instance.host_vm,
-    aviatrix_edge_spoke.edge,
-    # null_resource.edge_check
+    aviatrix_edge_spoke.edge
   ]
 }
-
-
-# #Validate if Edge VM is runninng
-# resource "null_resource" "edge_check" {
-#   for_each = google_compute_address.host_vm_pip
-
-#   connection {
-#     type        = "ssh"
-#     user        = "root"
-#     private_key = tls_private_key.root_ssh.private_key_openssh
-#     host        = each.value.address
-#   }
-
-#   provisioner "remote-exec" {
-#     inline = [
-#       "gsutil cp gs://${google_storage_bucket.bucket.name}/${google_storage_bucket_object.edge_check.name} /usr/local/bin/edge-check.py",
-#       "cloud-init status --wait",
-#       "python3 /usr/local/bin/edge-check.py"
-#     ]
-#   }
-
-#   depends_on = [
-#     google_compute_instance.host_vm,
-#     google_storage_bucket_object.edge_check
-#   ]
-# }
