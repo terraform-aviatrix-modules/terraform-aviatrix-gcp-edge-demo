@@ -63,7 +63,15 @@ resource "google_compute_instance" "host_vm" {
   # }
 
   depends_on = [
-    google_storage_bucket_object.startup_script
+    google_storage_bucket_object.libvirt_br_wan_xml,
+    google_storage_bucket_object.libvirt_br_lan_xml,
+    google_storage_bucket_object.libvirt_br_mgmt_xml,
+    google_storage_bucket_object.libvirt_vm_xml,
+    google_storage_bucket_object.libvirt_hook_network,
+    google_storage_bucket_object.startup_script,
+    google_storage_bucket_object.frr_conf,
+    google_storage_bucket_object.qcow2,
+    google_storage_bucket_object.edge_ztp
   ]
 }
 
