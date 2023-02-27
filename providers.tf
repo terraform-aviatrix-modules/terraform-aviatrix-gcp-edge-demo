@@ -11,10 +11,3 @@ terraform {
     }
   }
 }
-
-# provider "aviatrix" {}
-
-# provider "google" {
-#   project = "lexical-period-304315"
-#   region  = "us-central1"
-# }
