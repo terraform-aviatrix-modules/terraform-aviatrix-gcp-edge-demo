@@ -162,7 +162,7 @@ locals {
     mgmt_dhcp_ip     = cidrhost(cidrsubnet(local.mgmt_cidr, local.mgmt_cidr_bits_to_subtract, i), 2)
     mgmt_xml         = "br-mgmt.xml"
 
-    edge_vm = "${var.pov_prefix}-edge-vm-${i + 1}"
+    edge_vm = "${var.pov_prefix}-edge-${i + 1}"
     }
   }
 
