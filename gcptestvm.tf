@@ -43,10 +43,10 @@ resource "google_compute_instance" "test_vm" {
     }
   }
 
+  metadata_startup_script = var.test_vm_metadata_startup_script
 
   metadata = {
-    user-data = file("${path.module}/test-cloud-init.yaml")
-    ssh-keys  = local.test_vm_ssh_key
+    ssh-keys = local.test_vm_ssh_key
   }
 
   lifecycle {

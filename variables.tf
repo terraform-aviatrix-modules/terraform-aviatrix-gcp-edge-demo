@@ -64,6 +64,11 @@ variable "test_vm_size" {
   default     = "e2-micro"
 }
 
+variable "test_vm_metadata_startup_script" {
+  description = "Metadata startup script"
+  default     = null
+}
+
 variable "vm_ssh_key" {
   description = "Host/Test VM Public Key in string form. Must include user@domain at the end of the key."
   default     = ""
