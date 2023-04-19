@@ -35,7 +35,7 @@ resource "google_compute_firewall" "http" {
   }
 
   source_ranges = ["0.0.0.0/0"]
-  target_tags   = ["test_instance"]
+  target_tags   = ["test-instance"]
 }
 
 resource "google_compute_firewall" "allow_all" {
