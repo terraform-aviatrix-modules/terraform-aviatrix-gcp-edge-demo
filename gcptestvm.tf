@@ -48,6 +48,7 @@ resource "google_compute_instance" "test_vm" {
   metadata = {
     ssh-keys = local.test_vm_ssh_key
   }
+  tags = ["test_instance"]
 
   lifecycle {
     ignore_changes = [

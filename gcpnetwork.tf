@@ -25,6 +25,19 @@ resource "google_compute_firewall" "ssh" {
   source_ranges = local.host_ssh
 }
 
+resource "google_compute_firewall" "http" {
+  name    = "${local.test_vm_name}-ingress"
+  network = google_compute_network.vpc_network.name
+
+  allow {
+    protocol = "tcp"
+    ports    = ["80"]
+  }
+
+  source_ranges = ["0.0.0.0/0"]
+  target_tags   = ["test_instance"]
+}
+
 resource "google_compute_firewall" "allow_all" {
   name    = "${local.host_vpc_name}-allow-all"
   network = google_compute_network.vpc_network.name
