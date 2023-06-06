@@ -3,21 +3,32 @@
 resource "aviatrix_edge_spoke" "edge" {
   for_each = local.host_vms
 
-  gw_name = each.value.edge_vm
-  site_id = local.pov_edge_site
-
-  management_interface_config = "DHCP"
-
-  wan_interface_ip_prefix = "${each.value.wan_edge_ip}/${each.value.wan_prefix_size}"
-  wan_default_gateway_ip  = each.value.wan_bridge_ip
-  wan_public_ip           = google_compute_address.host_vm_pip[each.key].address
-
-  lan_interface_ip_prefix = "${each.value.lan_edge_ip}/${each.value.lan_prefix_size}"
-
+  gw_name                = each.value.edge_vm
+  site_id                = local.pov_edge_site
   ztp_file_type          = "iso"
   ztp_file_download_path = "${path.root}/${each.key}/"
 
   local_as_number = var.edge_vm_asn
+
+  interfaces {
+    name          = "eth0"
+    type          = "WAN"
+    ip_address    = "${each.value.wan_edge_ip}/${each.value.wan_prefix_size}"
+    gateway_ip    = each.value.wan_bridge_ip
+    wan_public_ip = google_compute_address.host_vm_pip[each.key].address
+  }
+
+  interfaces {
+    name       = "eth1"
+    type       = "LAN"
+    ip_address = "${each.value.lan_edge_ip}/${each.value.lan_prefix_size}"
+  }
+
+  interfaces {
+    name        = "eth2"
+    type        = "MANAGEMENT"
+    enable_dhcp = true
+  }
 
   provisioner "local-exec" {
     when       = destroy
@@ -58,7 +69,7 @@ resource "aviatrix_edge_spoke_transit_attachment" "to_transit_gw" {
   spoke_gw_name               = element(split("~", each.key), 0)
   transit_gw_name             = element(split("~", each.key), 1)
   enable_over_private_network = false
-  number_of_retries = 2
+  number_of_retries           = 2
 
   depends_on = [
     google_compute_instance.host_vm,
