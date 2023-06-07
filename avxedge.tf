@@ -3,10 +3,11 @@
 resource "aviatrix_edge_spoke" "edge" {
   for_each = local.host_vms
 
-  gw_name                = each.value.edge_vm
-  site_id                = local.pov_edge_site
-  ztp_file_type          = "iso"
-  ztp_file_download_path = "${path.root}/${each.key}/"
+  gw_name                          = each.value.edge_vm
+  site_id                          = local.pov_edge_site
+  ztp_file_type                    = "iso"
+  ztp_file_download_path           = "${path.root}/${each.key}/"
+  management_egress_ip_prefix_list = "${google_compute_address.host_vm_pip[each.key].address}/32"
 
   local_as_number = var.edge_vm_asn
 
