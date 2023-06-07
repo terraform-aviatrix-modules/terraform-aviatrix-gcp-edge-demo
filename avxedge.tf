@@ -9,6 +9,7 @@ resource "aviatrix_edge_spoke" "edge" {
   ztp_file_download_path           = "${path.root}/${each.key}/"
   management_egress_ip_prefix_list = [format("%s/%s", google_compute_address.host_vm_pip[each.key].address, "32")]
 
+
   local_as_number = var.edge_vm_asn
 
   interfaces {
@@ -71,6 +72,9 @@ resource "aviatrix_edge_spoke_transit_attachment" "to_transit_gw" {
   transit_gw_name             = element(split("~", each.key), 1)
   enable_over_private_network = false
   number_of_retries           = 2
+  edge_wan_interfaces         = ["eth0"]
+  spoke_prepend_as_path       = []
+  transit_prepend_as_path     = []
 
   depends_on = [
     google_compute_instance.host_vm,
