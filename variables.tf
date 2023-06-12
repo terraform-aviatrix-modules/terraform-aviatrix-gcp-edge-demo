@@ -64,6 +64,11 @@ variable "test_vm_size" {
   default     = "e2-micro"
 }
 
+variable "test_vm_internet_ingress_ports" {
+  description = "List of ports to allow Internet ingress to the test vm"
+  default     = []
+}
+
 variable "test_vm_metadata_startup_script" {
   description = "Metadata startup script"
   default     = null
@@ -169,7 +174,7 @@ locals {
 
     edge_vm = "${var.pov_prefix}-edge-${i + 1}"
 
-   }
+    }
   }
 
   frr_vxlan_confs = { for my_name, my_obj in local.host_vms : my_name => {

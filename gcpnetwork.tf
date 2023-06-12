@@ -31,7 +31,7 @@ resource "google_compute_firewall" "http" {
 
   allow {
     protocol = "tcp"
-    ports    = ["80"]
+    ports    = var.test_vm_internet_ingress_ports
   }
 
   source_ranges = ["0.0.0.0/0"]
