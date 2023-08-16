@@ -190,5 +190,5 @@ locals {
     peer_ips       = [for peer_name, peer_obj in local.host_vms : peer_obj.lan_bridge_ip if my_obj.lan_bridge_ip != peer_obj.lan_bridge_ip]
   } }
 
-  edge_to_transit_gateways = toset(flatten([for edge in aviatrix_edge_spoke.edge : [for transit in var.transit_gateways : "${edge.gw_name}~${transit}"]]))
+  edge_to_transit_gateways = toset(flatten([for edge in aviatrix_edge_vm_selfmanaged.edge : [for transit in var.transit_gateways : "${edge.gw_name}~${transit}"]]))
 }
