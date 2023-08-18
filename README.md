@@ -1,22 +1,26 @@
-# avxedgedemo
+# gcp-edge-demo
+
 Deploy Aviatrix Edge 2.0 in GCP (and eventually Azure.) AWS doesn't support nested virtualization, except on .metal instances.
 
-# Software Requirements
+## Software Requirements
+
 Terraform
 Google Cloud SDK/GCloud CLI: Must use **gcloud init** and **gcloud auth application-default login**.
 
-# Other requirements
+## Other requirements
+
 The IP of the Edge Host VMs must be allowed to connect to the controller on port 443. The example below shows GCP.
 
-# Example
-```
+## Example
+
+```terraform
 # Provider configuration
 
 terraform {
   required_providers {
     aviatrix = {
       source  = "aviatrixsystems/aviatrix"
-      #version = "~>2.24.0"
+      version = "~> 3.1.1"
     }
     google = {
       source = "hashicorp/google"
@@ -31,43 +35,28 @@ provider "google" {
   region  = "us-central1"
 }
 
-module "avxedgedemo" {
-  source = "github.com/MatthewKazmar/avxedgedemo"
-
-  admin_cidr = ["1.2.3.4/32"]
-  pov_prefix = "avx-mattk"
-  host_vm_size = "n2-standard-2"
-  host_vm_cidr = "10.40.251.16/28"
-  host_vm_asn = "64900"
-  host_vm_count = 2
-  test_vm_size = "e2-micro"
-  vm_ssh_key = "" # Optional: Additional VM public keys
-  edge_vm_asn = 64581
-  edge_lan_cidr = "10.40.251.0/29"
-  edge_image_filename = "" # Edge image/path
-  external_cidrs = [] # FRR will routes these cidrs to the GCP default GW
-  transit_gateways = [ "transit-gcp-1", "transit-aws-2" ]
+data "http" "myip" {
+  url = "http://ifconfig.me"
 }
 
-resource "google_compute_firewall" "avx-edge" {
-  name = "avx-edge-pips"
-  network = "avx-mgmt" # Put in the name of your Aviatrix management network here.
-
-  allow {
-    protocol = "tcp"
-    ports = [ "443" ]
-  }
-
-  direction = "INGRESS"
-  source_ranges = [ for pip in module.avxedgedemo.host_vm_pip: pip.address ]
-  target_tags = ["aviatrix-sec-mgmt"]
+module "edge" {
+  source                          = "terraform-aviatrix-modules/gcp-edge-demo/aviatrix"
+  version                         = "3.1.1"
+  admin_cidr                      = ["${chomp(data.http.myip.response_body)}/32"]
+  region                          = "us-west2"
+  pov_prefix                      = "us-west2-demo"
+  host_vm_size                    = "n2-standard-2"
+  test_vm_size                    = "n2-standard-2"
+  test_vm_internet_ingress_ports  = ["443", "8443"]
+  host_vm_cidr                    = "10.40.251.16/28"
+  host_vm_asn                     = 64900
+  host_vm_count                   = 1
+  edge_vm_asn                     = 64581
+  edge_lan_cidr                   = "10.40.251.0/29"
+  edge_image_filename             = "${path.module}/avx-edge-kvm-7.1-2023-04-24.qcow2"
+  test_vm_metadata_startup_script = null
+  external_cidrs = []
+  vm_ssh_key     = file("~/.ssh/id_rsa.pub")
+  transit_gateways = []
 }
-
-output "public_ips" {
-  value = merge(
-    { for k, v in module.avxedgedemo.host_vm_pip : v.name => v.address },
-    { "${module.avxedgedemo.test_vm_pip.name}" = module.avxedgedemo.test_vm_pip.address }
-  )
-}
-
 ```
