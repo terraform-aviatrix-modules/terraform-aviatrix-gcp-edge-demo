@@ -64,6 +64,16 @@ variable "test_vm_size" {
   default     = "e2-micro"
 }
 
+variable "test_vm_internet_ingress_ports" {
+  description = "List of ports to allow Internet ingress to the test vm"
+  default     = []
+}
+
+variable "test_vm_metadata_startup_script" {
+  description = "Metadata startup script"
+  default     = null
+}
+
 variable "vm_ssh_key" {
   description = "Host/Test VM Public Key in string form. Must include user@domain at the end of the key."
   default     = ""
@@ -162,7 +172,8 @@ locals {
     mgmt_dhcp_ip     = cidrhost(cidrsubnet(local.mgmt_cidr, local.mgmt_cidr_bits_to_subtract, i), 2)
     mgmt_xml         = "br-mgmt.xml"
 
-    edge_vm = "${var.pov_prefix}-edge-vm-${i + 1}"
+    edge_vm = "${var.pov_prefix}-edge-${i + 1}"
+
     }
   }
 
@@ -179,5 +190,5 @@ locals {
     peer_ips       = [for peer_name, peer_obj in local.host_vms : peer_obj.lan_bridge_ip if my_obj.lan_bridge_ip != peer_obj.lan_bridge_ip]
   } }
 
-  edge_to_transit_gateways = toset(flatten([for edge in aviatrix_edge_spoke.edge : [for transit in var.transit_gateways : "${edge.gw_name}~${transit}"]]))
+  edge_to_transit_gateways = toset(flatten([for edge in aviatrix_edge_vm_selfmanaged.edge : [for transit in var.transit_gateways : "${edge.gw_name}~${transit}"]]))
 }

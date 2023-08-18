@@ -124,11 +124,11 @@ resource "google_storage_bucket_object" "edge_ztp" {
 
   lifecycle {
     replace_triggered_by = [
-      aviatrix_edge_spoke.edge
+      aviatrix_edge_vm_selfmanaged.edge
     ]
   }
 
   depends_on = [
-    aviatrix_edge_spoke.edge
+    aviatrix_edge_vm_selfmanaged.edge
   ]
 }

@@ -1,23 +1,36 @@
 # Deploy Avx Edge Gateways in Controller, download ZTP.
 
-resource "aviatrix_edge_spoke" "edge" {
+resource "aviatrix_edge_vm_selfmanaged" "edge" {
   for_each = local.host_vms
 
-  gw_name = each.value.edge_vm
-  site_id = local.pov_edge_site
+  gw_name                          = each.value.edge_vm
+  site_id                          = local.pov_edge_site
+  ztp_file_type                    = "iso"
+  ztp_file_download_path           = "${path.root}/${each.key}/"
+  management_egress_ip_prefix_list = [format("%s/%s", google_compute_address.host_vm_pip[each.key].address, "32")]
 
-  management_interface_config = "DHCP"
-
-  wan_interface_ip_prefix = "${each.value.wan_edge_ip}/${each.value.wan_prefix_size}"
-  wan_default_gateway_ip  = each.value.wan_bridge_ip
-  wan_public_ip           = google_compute_address.host_vm_pip[each.key].address
-
-  lan_interface_ip_prefix = "${each.value.lan_edge_ip}/${each.value.lan_prefix_size}"
-
-  ztp_file_type          = "iso"
-  ztp_file_download_path = "${path.root}/${each.key}/"
 
   local_as_number = var.edge_vm_asn
+
+  interfaces {
+    name          = "eth0"
+    type          = "WAN"
+    ip_address    = "${each.value.wan_edge_ip}/${each.value.wan_prefix_size}"
+    gateway_ip    = each.value.wan_bridge_ip
+    wan_public_ip = google_compute_address.host_vm_pip[each.key].address
+  }
+
+  interfaces {
+    name       = "eth1"
+    type       = "LAN"
+    ip_address = "${each.value.lan_edge_ip}/${each.value.lan_prefix_size}"
+  }
+
+  interfaces {
+    name        = "eth2"
+    type        = "MANAGEMENT"
+    enable_dhcp = true
+  }
 
   provisioner "local-exec" {
     when       = destroy
@@ -47,7 +60,7 @@ resource "aviatrix_edge_spoke_external_device_conn" "to_host_vm" {
 
   depends_on = [
     google_compute_instance.host_vm,
-    aviatrix_edge_spoke.edge
+    aviatrix_edge_vm_selfmanaged.edge
   ]
 }
 
@@ -58,10 +71,13 @@ resource "aviatrix_edge_spoke_transit_attachment" "to_transit_gw" {
   spoke_gw_name               = element(split("~", each.key), 0)
   transit_gw_name             = element(split("~", each.key), 1)
   enable_over_private_network = false
-  number_of_retries = 2
+  number_of_retries           = 2
+  edge_wan_interfaces         = ["eth0"]
+  spoke_prepend_as_path       = []
+  transit_prepend_as_path     = []
 
   depends_on = [
     google_compute_instance.host_vm,
-    aviatrix_edge_spoke.edge
+    aviatrix_edge_vm_selfmanaged.edge
   ]
 }

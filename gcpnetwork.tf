@@ -25,6 +25,19 @@ resource "google_compute_firewall" "ssh" {
   source_ranges = local.host_ssh
 }
 
+resource "google_compute_firewall" "http" {
+  name    = "${local.test_vm_name}-ingress"
+  network = google_compute_network.vpc_network.name
+
+  allow {
+    protocol = "tcp"
+    ports    = var.test_vm_internet_ingress_ports
+  }
+
+  source_ranges = ["0.0.0.0/0"]
+  target_tags   = ["test-instance"]
+}
+
 resource "google_compute_firewall" "allow_all" {
   name    = "${local.host_vpc_name}-allow-all"
   network = google_compute_network.vpc_network.name
@@ -86,7 +99,7 @@ resource "google_compute_forwarding_rule" "forwarding_rule" {
 }
 
 resource "google_compute_route" "avx-edge-rfc10" {
-  name         = "avx-edge-rfc10"
+  name         = "${var.pov_prefix}-edge-rfc10"
   dest_range   = "10.0.0.0/8"
   network      = google_compute_network.vpc_network.name
   next_hop_ilb = google_compute_forwarding_rule.forwarding_rule.id
@@ -94,7 +107,7 @@ resource "google_compute_route" "avx-edge-rfc10" {
 }
 
 resource "google_compute_route" "avx-edge-rfc172" {
-  name         = "avx-edge-rfc172"
+  name         = "${var.pov_prefix}-edge-rfc172"
   dest_range   = "172.16.0.0/12"
   network      = google_compute_network.vpc_network.name
   next_hop_ilb = google_compute_forwarding_rule.forwarding_rule.id
@@ -102,7 +115,7 @@ resource "google_compute_route" "avx-edge-rfc172" {
 }
 
 resource "google_compute_route" "avx-edge-rfc192" {
-  name         = "avx-edge-rfc192"
+  name         = "${var.pov_prefix}-edge-rfc192"
   dest_range   = "192.168.0.0/16"
   network      = google_compute_network.vpc_network.name
   next_hop_ilb = google_compute_forwarding_rule.forwarding_rule.id
