@@ -46,7 +46,7 @@ resource "google_compute_instance" "test_vm" {
   metadata_startup_script = var.test_vm_metadata_startup_script
 
   metadata = {
-    ssh-keys = local.test_vm_ssh_key
+    ssh-keys = "ubuntu:${var.vm_ssh_key}"
   }
   tags = ["test-instance"]
 
