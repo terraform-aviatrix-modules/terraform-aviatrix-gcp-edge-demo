@@ -12,7 +12,7 @@ resource "local_sensitive_file" "root_ssh" {
 
 #Need to let Terraform contact the host VMs.
 data "http" "my_pip" {
-  url = "http://ifconfig.me"
+  url = "https://ipv4.icanhazip.com/"
 }
 
 resource "local_file" "libvirt_br_wan_xml" {

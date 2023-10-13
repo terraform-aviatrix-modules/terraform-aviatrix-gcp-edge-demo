@@ -36,7 +36,7 @@ provider "google" {
 }
 
 data "http" "myip" {
-  url = "http://ifconfig.me"
+  url = "https://ipv4.icanhazip.com/"
 }
 
 module "edge" {
