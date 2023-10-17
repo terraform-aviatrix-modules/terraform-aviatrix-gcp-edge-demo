@@ -70,8 +70,9 @@ variable "edge_image_filename" {
 }
 
 variable "edge_image_location" {
-  description = "GCP Storage bucket location for the Edge image"
   type = string
+  description = "GCP Storage bucket location for the Edge image"
+  default     = ""
 }
 
 variable "external_cidrs" {
@@ -138,7 +139,7 @@ locals {
 
     bucket = google_storage_bucket.bucket.name
 
-    edge_bucket = var.edge_image_location == "" ? bucket : var.edge_image_location
+    edge_bucket = var.edge_image_location == "" ? google_storage_bucket.bucket.name : var.edge_image_location
 
     wan_prefix_size = local.wan_prefix_size
     wan_bridge_ip   = cidrhost(cidrsubnet(local.wan_cidr, local.wan_cidr_bits_to_subtract, i), 1)
