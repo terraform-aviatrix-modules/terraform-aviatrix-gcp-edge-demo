@@ -111,7 +111,7 @@ resource "google_storage_bucket_object" "frr_conf" {
 
 # Block this resource from being created if the edge_image_location is set.
 resource "google_storage_bucket_object" "qcow2" {
-  count  = var.edge_image_location == "" ? 0 : 1
+  count  = var.edge_image_location == "" ? 1 : 0
   name   = "edge.qcow2"
   source = var.edge_image_filename
   bucket = google_storage_bucket.bucket.name
