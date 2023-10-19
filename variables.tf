@@ -66,7 +66,7 @@ variable "edge_lan_cidr" {
 
 variable "edge_image_filename" {
   description = "Edge image filename"
-  default     = "avx-edge-gateway-kvm-2022-08-31-6.8.qcow2"
+  default     = "edge.qcow2"
 }
 
 variable "edge_image_location" {
@@ -140,6 +140,8 @@ locals {
     bucket = google_storage_bucket.bucket.name
 
     edge_bucket = var.edge_image_location == "" ? google_storage_bucket.bucket.name : var.edge_image_location
+
+    edge_image_name = var.edge_image_filename
 
     wan_prefix_size = local.wan_prefix_size
     wan_bridge_ip   = cidrhost(cidrsubnet(local.wan_cidr, local.wan_cidr_bits_to_subtract, i), 1)

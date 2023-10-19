@@ -11,17 +11,17 @@ fi
 
 # Download Edge.qcow2
 # We only get the qcow2 and ztp if the qcow2 is missing.
-if [ ! -f /var/lib/libvirt/images/edge.qcow2 ]; then
+if [ ! -f /var/lib/libvirt/images/$edge_image_name ]; then
   mkdir -p var/lib/libvirt/images
   while :; do
     #Edge Qcow2?
-    gsutil cp gs://${edge_bucket}/edge.qcow2 /var/lib/libvirt/images/.
+    gsutil cp gs://${edge_bucket}/${edge_image_name} /var/lib/libvirt/images/.
     if [ $? -ne 0 ]; then
-      echo "Warning: edge.qcow2 not in bucket."
+      echo "Warning: $edge_image_name not in bucket."
       sleep 60 #Sleep 1 min
       continue
     else
-      echo "edge.qcow2 downloaded."
+      echo "$edge_image_name downloaded."
       break
     fi
   done
