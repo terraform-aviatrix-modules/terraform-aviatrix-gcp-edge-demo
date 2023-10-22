@@ -75,7 +75,7 @@ variable "edge_image_location" {
   default     = ""
 
    validation {
-    condition     = can(regex("^[a-zA-Z0-9]+\\/[a-zA-Z0-9]+$", var.edge_image_location))
+    condition     = can(regex("^[^/]+/[^/]+$", var.edge_image_location))
     error_message = "Edge image location should be in the format <bucket_name>/<edge_image_name>.qcow2"
   }
 }
