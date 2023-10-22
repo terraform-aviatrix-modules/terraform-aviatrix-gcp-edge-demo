@@ -144,9 +144,11 @@ locals {
 
     bucket = google_storage_bucket.bucket.name
 
-    edge_bucket = var.edge_image_location == "" ? google_storage_bucket.bucket.name : var.edge_image_location
+    # Name of the bucket that stores the edge image.
+    edge_bucket = var.edge_image_location == "" ? google_storage_bucket.bucket.name: split("/", var.edge_image_location)[0]
 
-    edge_image_name = basename(var.edge_image_filename)
+    # Name of the edge image in the format <edge_image_name>.qcow2.
+    edge_image_name = var.edge_image_location == "" ? basename(var.edge_image_filename) : split("/", var.edge_image_location)[1]
 
     wan_prefix_size = local.wan_prefix_size
     wan_bridge_ip   = cidrhost(cidrsubnet(local.wan_cidr, local.wan_cidr_bits_to_subtract, i), 1)
