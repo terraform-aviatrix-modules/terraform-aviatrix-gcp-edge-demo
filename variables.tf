@@ -9,35 +9,10 @@ variable "region" {
   default     = "us-central1"
 }
 
-# variable "project_id" {
-#   description = "GCP project to deploy into."
-#   default     = null
-
-#   #   validation {
-#   #     condition     = (var.project_id != null && var.subscription_id != null) != null || (var.project_id == null && var.subscription_id == null)
-#   #     error_message = "You must define the GCP Project ID (project_id) OR Azure Subscription ID (subscription_id)."
-#   #   }
-# }
-
-# variable "subscription_id" {
-#   description = "Azure Subscription to deploy into."
-#   default     = null
-
-#   # validation {
-#   #   condition     = (var.project_id != null && var.subscription_id != null) || (var.project_id == null && var.subscription_id == null)
-#   #   error_message = "You must define the GCP Project ID (project_id) OR Azure Subscription ID (subscription_id)."
-#   # }
-# }
-
 variable "pov_prefix" {
   description = "Name prefix to prepend to all created resources. ie avx-edge-vm-1."
   default     = "avx"
 }
-
-# variable "host_vm_number" {
-#   description = "If multiple host VMs are deployed from the calling Plan, append this number to the VM name."
-#   default     = 1
-# }
 
 variable "host_vm_size" {
   description = "Has to be capable of virtualization."
@@ -91,7 +66,19 @@ variable "edge_lan_cidr" {
 
 variable "edge_image_filename" {
   description = "Edge image filename"
-  default     = "avx-edge-gateway-kvm-2022-08-31-6.8.qcow2"
+  default     = ""
+}
+
+variable "edge_image_location" {
+  type        = string
+  description = "GCP Storage bucket location for the Edge image"
+  default     = null
+
+  # Only runs the validation if the edge_image_location is set.
+  validation {
+    condition     = var.edge_image_location == null ? true : can(regex("^[^/]+/[^/]+$", var.edge_image_location))
+    error_message = "Edge image location should be in the format <bucket_name>/<edge_image_name>.qcow2"
+  }
 }
 
 variable "external_cidrs" {
@@ -111,9 +98,8 @@ locals {
   host_vpc_name    = "${var.pov_prefix}-vpc"
   host_subnet_name = "${var.pov_prefix}-subnet"
   host_ssh         = concat(["35.235.240.0/20", "${chomp(data.http.my_pip.response_body)}/32"], var.admin_cidr) #GCP IAP prefix for portal ssh
-  #host_ssh         = concat(["35.235.240.0/20", data.http.my_public_ip.response_body ], var.admin_cidr)  #GCP IAP prefix for portal ssh
-  host_allow_all = concat([var.host_vm_cidr, "130.211.0.0/22", "35.191.0.0/16"], var.external_cidrs) #We allow all from the external cidrs and the host_vm_cidr itself.
-  host_vm_prefix = "${var.pov_prefix}-host"
+  host_allow_all   = concat([var.host_vm_cidr, "130.211.0.0/22", "35.191.0.0/16"], var.external_cidrs)          #We allow all from the external cidrs and the host_vm_cidr itself.
+  host_vm_prefix   = "${var.pov_prefix}-host"
 
   test_vm_name = "${var.pov_prefix}-test-vm"
 
@@ -154,10 +140,16 @@ locals {
 
     host_vm  = "${var.pov_prefix}-host-vm-${i + 1}"
     host_asn = var.host_vm_asn
-    #host_vm_asn = var.host_vm_asn
+
     vpc_ip = cidrhost(var.host_vm_cidr, i + 3) #Right after the ILB
 
     bucket = google_storage_bucket.bucket.name
+
+    # Name of the bucket that stores the edge image.
+    edge_bucket = var.edge_image_location == null ? google_storage_bucket.bucket.name : split("/", var.edge_image_location)[0]
+
+    # Name of the edge image in the format <edge_image_name>.qcow2.
+    edge_image_name = var.edge_image_location == null ? basename(var.edge_image_filename) : split("/", var.edge_image_location)[1]
 
     wan_prefix_size = local.wan_prefix_size
     wan_bridge_ip   = cidrhost(cidrsubnet(local.wan_cidr, local.wan_cidr_bits_to_subtract, i), 1)

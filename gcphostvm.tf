@@ -56,12 +56,6 @@ resource "google_compute_instance" "host_vm" {
     edge-vm-name       = each.value.edge_vm
   }
 
-  # lifecycle {
-  #   ignore_changes = [
-  #     metadata["ssh-keys"]
-  #   ]
-  # }
-
   depends_on = [
     google_storage_bucket_object.libvirt_br_wan_xml,
     google_storage_bucket_object.libvirt_br_lan_xml,
@@ -70,7 +64,7 @@ resource "google_compute_instance" "host_vm" {
     google_storage_bucket_object.libvirt_hook_network,
     google_storage_bucket_object.startup_script,
     google_storage_bucket_object.frr_conf,
-    google_storage_bucket_object.qcow2,
+    google_storage_bucket_object.qcow2[0],
     google_storage_bucket_object.edge_ztp
   ]
 }

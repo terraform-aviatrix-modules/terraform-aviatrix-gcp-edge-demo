@@ -30,7 +30,7 @@
     <emulator>/usr/bin/qemu-system-x86_64</emulator>
     <disk type="file" device="disk">
       <driver name="qemu" type="qcow2"/>
-      <source file="/var/lib/libvirt/images/edge.qcow2"/>
+      <source file="/var/lib/libvirt/images/${edge_image_name}"/>
       <target dev="vda" bus="virtio"/>
     </disk>
     <disk type="file" device="cdrom">
