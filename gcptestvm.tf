@@ -29,7 +29,7 @@ resource "google_compute_instance" "test_vm" {
 
   boot_disk {
     initialize_params {
-      image = "projects/ubuntu-os-cloud/global/images/ubuntu-2204-jammy-v20220902"
+      image = var.gcp_ubuntu_image
       size  = 10
     }
   }
