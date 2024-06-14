@@ -91,6 +91,11 @@ variable "transit_gateways" {
   default     = []
 }
 
+variable "gcp_ubuntu_image" {
+  description = "Ubuntu image reference"
+  default     = "projects/ubuntu-os-cloud/global/images/ubuntu-2204-jammy-v20240607"
+}
+
 # Locals/computed
 locals {
   pov_edge_site = "${var.pov_prefix}-edge-site"
