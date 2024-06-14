@@ -91,7 +91,12 @@ variable "transit_gateways" {
   default     = []
 }
 
-variable "gcp_ubuntu_image" {
+variable "gcp_ubuntu_image_host" {
+  description = "Ubuntu image reference"
+  default     = "projects/ubuntu-os-cloud/global/images/ubuntu-2204-jammy-v20220902"
+}
+
+variable "gcp_ubuntu_image_test" {
   description = "Ubuntu image reference"
   default     = "projects/ubuntu-os-cloud/global/images/ubuntu-2204-jammy-v20240607"
 }
