@@ -1,6 +1,6 @@
 # Deploy Avx Edge Gateways in Controller, download ZTP.
 
-resource "aviatrix_edge_vm_selfmanaged" "edge" {
+resource "aviatrix_edge_gateway_selfmanaged" "edge" {
   for_each = local.host_vms
 
   gw_name                          = each.value.edge_vm
@@ -60,7 +60,7 @@ resource "aviatrix_edge_spoke_external_device_conn" "to_host_vm" {
 
   depends_on = [
     google_compute_instance.host_vm,
-    aviatrix_edge_vm_selfmanaged.edge
+    aviatrix_edge_gateway_selfmanaged.edge
   ]
 }
 
@@ -78,6 +78,6 @@ resource "aviatrix_edge_spoke_transit_attachment" "to_transit_gw" {
 
   depends_on = [
     google_compute_instance.host_vm,
-    aviatrix_edge_vm_selfmanaged.edge
+    aviatrix_edge_gateway_selfmanaged.edge
   ]
 }
