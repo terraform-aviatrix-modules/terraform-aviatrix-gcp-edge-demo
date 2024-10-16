@@ -71,7 +71,7 @@ resource "google_compute_instance" "host_vm" {
 
 #Create unmanaged IGs
 resource "google_compute_instance_group" "instance_group" {
-  count = length(local.host_vms) < length(data.google_compute_zones.available.names) ? length(local.host_vms) : length(data.google_compute_zones.available.names)
+  count = length(local.host_vms)
 
   name    = "${local.host_vm_prefix}-${data.google_compute_zones.available.names[count.index]}"
   zone    = data.google_compute_zones.available.names[count.index]
