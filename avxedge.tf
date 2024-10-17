@@ -56,7 +56,8 @@ resource "aviatrix_edge_spoke_external_device_conn" "to_host_vm" {
   bgp_remote_as_num = var.host_vm_asn
   local_lan_ip      = each.value.lan_edge_ip
   remote_lan_ip     = each.value.lan_bridge_ip
-  number_of_retries = 2
+  number_of_retries = var.number_of_retries
+  retry_interval    = var.retry_interval
 
   depends_on = [
     google_compute_instance.host_vm,

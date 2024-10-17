@@ -96,6 +96,16 @@ variable "gcp_ubuntu_image" {
   default     = "projects/ubuntu-os-cloud/global/images/ubuntu-2204-jammy-v20240607"
 }
 
+variable "number_of_retries" {
+  description = "Number of retries for aviatrix_edge_spoke_external_device_conn"
+  default     = 3
+
+}
+variable "retry_interval" {
+  description = "Retry interval for aviatrix_edge_spoke_external_device_conn"
+  default     = 300
+}
+
 # Locals/computed
 locals {
   pov_edge_site = "${var.pov_prefix}-edge-site"
@@ -114,7 +124,6 @@ locals {
 
   edge_vm_prefix = "${var.pov_prefix}-edge"
 
-  storage_name         = "${var.pov_prefix}-edge-bucket"
   backend_service_name = "${var.pov_prefix}-backend-service"
   hc_name              = "${var.pov_prefix}-edge-bgp-hc"
   forwarding_rule_name = "${var.pov_prefix}-edge-forwarding-rule"

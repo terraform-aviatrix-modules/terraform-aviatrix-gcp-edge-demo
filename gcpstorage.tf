@@ -4,8 +4,15 @@
 # The Project Owners/Editors have read/write.
 # The Compute Engine default as well as a few other accounts have read access.
 # This default is fine for this deployment.
+resource "random_string" "random" {
+  length           = 8
+  upper            = false
+  special          = true
+  override_special = "-_"
+}
+
 resource "google_storage_bucket" "bucket" {
-  name     = local.storage_name
+  name     = "avx-${random_string.random.id}-edge-bucket"
   location = var.region
 
   uniform_bucket_level_access = true
