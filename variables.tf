@@ -98,7 +98,7 @@ variable "gcp_ubuntu_image" {
 
 variable "number_of_retries" {
   description = "Number of retries for aviatrix_edge_spoke_external_device_conn"
-  default     = 3
+  default     = 4
 
 }
 variable "retry_interval" {
@@ -129,7 +129,7 @@ locals {
   forwarding_rule_name = "${var.pov_prefix}-edge-forwarding-rule"
 
   #Need to carve var.edge_lan_cidr and local.internal_cidr into /29 prefixes.
-  internal_cidr = "169.254.0.0/16"
+  internal_cidr = "192.168.0.0/16"
 
   wan_cidr                  = cidrsubnet(local.internal_cidr, 1, 0)
   wan_prefix_size           = 30 #Same as Mgmt.

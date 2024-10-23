@@ -1,5 +1,3 @@
-# Provider configuration
-
 terraform {
   required_providers {
     aviatrix = {
