@@ -98,7 +98,7 @@ variable "gcp_ubuntu_image" {
 
 variable "number_of_retries" {
   description = "Number of retries for aviatrix_edge_spoke_external_device_conn"
-  default     = 3
+  default     = 4
 
 }
 variable "retry_interval" {
