@@ -106,6 +106,16 @@ variable "retry_interval" {
   default     = 300
 }
 
+variable "enable_hpe_spoke" {
+  description = "Enable high performance encryption on the edge to transit attachment"
+  default     = false
+}
+
+variable "hpe_tunnel_number" {
+  description = "Number of high performance tunnels when hpe is enabled"
+  default     = 2
+}
+
 # Locals/computed
 locals {
   pov_edge_site = "${var.pov_prefix}-edge-site"

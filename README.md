@@ -11,6 +11,7 @@ Google Cloud SDK/GCloud CLI: Must use **gcloud init** and **gcloud auth applicat
 
 | Module version | Terraform version | Controller version | Terraform provider version |
 | :------------- | :---------------- | :----------------- | :------------------------- |
+| v3.2.1         | >= 1.5.0          | >= 7.2             | ~>3.2.0                    |
 | v3.1.4         | >= 1.3.0          | >= 7.1             | ~>3.1.0                    |
 
 ## Module Attributes
@@ -21,7 +22,7 @@ Google Cloud SDK/GCloud CLI: Must use **gcloud init** and **gcloud auth applicat
   | :------------------ | :-------------------------------------------------------------------------------------- |
   |                     |
   | source              | "terraform-aviatrix-modules/gcp-edge-demo/aviatrix"                                     |
-  | version             | "3.1.4"                                                                                 |
+  | version             | "3.2.1"                                                                                 |
   | edge_image_location | gcp_bucket/filename.qcow2                                                               |
   | edge_image_filename | ${path.module}/filename.qcow2                                                           |
   | vm_ssh_key          | Host/Test VM Public Key in string form. Must include user@domain at the end of the key. |
@@ -55,7 +56,7 @@ terraform {
   required_providers {
     aviatrix = {
       source  = "aviatrixsystems/aviatrix"
-      version = "~> 3.1.1"
+      version = "~> 3.2.1"
     }
     google = {
       source = "hashicorp/google"
@@ -76,7 +77,7 @@ data "http" "myip" {
 
 module "edge" {
   source                          = "terraform-aviatrix-modules/gcp-edge-demo/aviatrix"
-  version                         = "3.1.4"
+  version                         = "3.2.1"
   admin_cidr                      = ["${chomp(data.http.myip.response_body)}/32"]
   region                          = "us-west2"
   pov_prefix                      = "us-west2-demo"
@@ -88,7 +89,7 @@ module "edge" {
   host_vm_count                   = 1
   edge_vm_asn                     = 64581
   edge_lan_cidr                   = "10.40.251.0/29"
-  edge_image_location             = "gcp_bucket/avx-edge-kvm-7.1-2023-04-24.qcow2"
+  edge_image_location             = "gcp_bucket/avx-gateway-avx-g3-202409102334.qcow2"
   test_vm_metadata_startup_script = null
   external_cidrs                  = []
   vm_ssh_key                      = file("~/.ssh/id_rsa.pub")
