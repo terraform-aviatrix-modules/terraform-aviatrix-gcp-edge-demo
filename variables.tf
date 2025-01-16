@@ -116,6 +116,11 @@ variable "hpe_tunnel_number" {
   default     = 2
 }
 
+variable "connect_host_bgp" {
+  description = "Connect edge spokes to host VMs using BGP"
+  default     = true
+}
+
 # Locals/computed
 locals {
   pov_edge_site = "${var.pov_prefix}-edge-site"
