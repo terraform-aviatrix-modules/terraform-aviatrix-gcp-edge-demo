@@ -47,7 +47,7 @@ resource "aviatrix_edge_gateway_selfmanaged" "edge" {
 
 # Connect Edge VMs to host VMs with BGPoLAN
 resource "aviatrix_edge_spoke_external_device_conn" "to_host_vm" {
-  for_each = local.host_vms
+  for_each = { for k, v in local.host_vms : k => v if var.connect_host_bgp }
 
   site_id           = local.pov_edge_site
   connection_name   = "${each.value.edge_vm}-to-${each.key}"
