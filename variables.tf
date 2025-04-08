@@ -164,6 +164,14 @@ locals {
   ilb_vpc_ip     = cidrhost(var.host_vm_cidr, 2)                                   #Get first usable IP
   test_vm_vpc_ip = cidrhost(var.host_vm_cidr, pow(2, local.host_vm_cidr_bits) - 3) #Get 2nd to last usable IP
 
+  bucket = google_storage_bucket.bucket.name
+
+  # Name of the bucket that stores the edge image.
+  edge_bucket = var.edge_image_location == null ? google_storage_bucket.bucket.name : split("/", var.edge_image_location)[0]
+
+  # Name of the edge image in the format <edge_image_name>.qcow2.
+  edge_image_name = var.edge_image_location == null ? basename(var.edge_image_filename) : split("/", var.edge_image_location)[1]
+
   host_vms = { for i in range(var.host_vm_count) : "${var.pov_prefix}-host-vm-${i + 1}" => {
     index = i
 
@@ -172,13 +180,13 @@ locals {
 
     vpc_ip = cidrhost(var.host_vm_cidr, i + 3) #Right after the ILB
 
-    bucket = google_storage_bucket.bucket.name
+    bucket = local.bucket
 
     # Name of the bucket that stores the edge image.
-    edge_bucket = var.edge_image_location == null ? google_storage_bucket.bucket.name : split("/", var.edge_image_location)[0]
+    edge_bucket = local.edge_bucket
 
     # Name of the edge image in the format <edge_image_name>.qcow2.
-    edge_image_name = var.edge_image_location == null ? basename(var.edge_image_filename) : split("/", var.edge_image_location)[1]
+    edge_image_name = local.edge_image_name
 
     wan_prefix_size = local.wan_prefix_size
     wan_bridge_ip   = cidrhost(cidrsubnet(local.wan_cidr, local.wan_cidr_bits_to_subtract, i), 1)
