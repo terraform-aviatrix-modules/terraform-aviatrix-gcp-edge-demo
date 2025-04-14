@@ -33,6 +33,24 @@ resource "aviatrix_edge_gateway_selfmanaged" "edge" {
   }
 
   provisioner "local-exec" {
+    when       = create
+    command    = <<EOT
+      timeout=300
+      start_time=$(date +%s)
+      while [ ! -f ${self.ztp_file_download_path}${self.gw_name}-${self.site_id}.iso ]; do
+        current_time=$(date +%s)
+        elapsed=$((current_time - start_time))
+        if [ $elapsed -ge $timeout ]; then
+          echo "Error: Timed out waiting for ISO file after $timeout seconds"
+          exit 1
+        fi
+        echo "Waiting for ISO file to be created... ($elapsed seconds elapsed)"
+        sleep 5
+      done
+      EOT
+    on_failure = fail
+  }
+  provisioner "local-exec" {
     when       = destroy
     command    = "rm ${self.ztp_file_download_path}${self.gw_name}-${self.site_id}.iso"
     on_failure = continue
