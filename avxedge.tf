@@ -111,6 +111,10 @@ resource "aviatrix_edge_spoke_transit_attachment" "to_transit_gw" {
   enable_insane_mode          = var.enable_hpe_spoke
   insane_mode_tunnel_number   = var.enable_hpe_spoke ? var.hpe_tunnel_number : null
 
+  lifecycle {
+    replace_triggered_by = [null_resource.always_trigger]
+  }
+
   depends_on = [
     google_compute_instance.host_vm,
     aviatrix_edge_gateway_selfmanaged.edge,
