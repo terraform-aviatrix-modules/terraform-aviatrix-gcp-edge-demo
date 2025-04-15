@@ -1,5 +1,11 @@
 # Deploy Avx Edge Gateways in Controller, download ZTP.
 
+resource "null_resource" "always_trigger" {
+  triggers = {
+    always_run = timestamp()
+  }
+}
+
 resource "aviatrix_edge_gateway_selfmanaged" "edge" {
   for_each = local.host_vms
 
@@ -11,6 +17,10 @@ resource "aviatrix_edge_gateway_selfmanaged" "edge" {
 
 
   local_as_number = var.edge_vm_asn
+
+  lifecycle {
+    replace_triggered_by = [null_resource.always_trigger]
+  }
 
   interfaces {
     name          = "eth0"
