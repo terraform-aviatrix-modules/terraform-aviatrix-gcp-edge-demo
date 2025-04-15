@@ -87,6 +87,10 @@ resource "aviatrix_edge_spoke_external_device_conn" "to_host_vm" {
   number_of_retries = var.number_of_retries
   retry_interval    = var.retry_interval
 
+  lifecycle {
+    replace_triggered_by = [null_resource.always_trigger]
+  }
+
   depends_on = [
     google_compute_instance.host_vm,
     aviatrix_edge_gateway_selfmanaged.edge
