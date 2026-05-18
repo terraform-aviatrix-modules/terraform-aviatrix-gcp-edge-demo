@@ -30,7 +30,7 @@ resource "google_compute_instance" "test_vm" {
   boot_disk {
     initialize_params {
       image = var.gcp_ubuntu_image
-      size  = 10
+      size  = 20
     }
   }
 
